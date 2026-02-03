@@ -12,7 +12,7 @@ Build a location-based cultural exploration demo in one day: start with a workin
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - Map integration and dark theme shell
+- [x] **Phase 1: Foundation** - Map integration and dark theme shell ✓
 - [ ] **Phase 2: Dual-Axis Navigator** - Time period and category selection controls
 - [ ] **Phase 3: AI Content** - Claude API integration for location-aware content
 - [ ] **Phase 4: Polish & Social** - Social map layer, POI markers, and demo readiness
@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 1 plan
 
 Plans:
-- [ ] 01-01-PLAN.md — App shell with Leaflet map, GPS positioning, dark neon theme, and responsive layout
+- [x] 01-01-PLAN.md — App shell with Leaflet map, GPS positioning, dark neon theme, and responsive layout ✓
 
 ### Phase 2: Dual-Axis Navigator
 **Goal**: User can select any combination of time period and content category with smooth, visually distinct transitions
@@ -81,7 +81,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|---------------|--------|-----------|
-| 1. Foundation | 0/1 | Not started | - |
+| 1. Foundation | 1/1 | Complete ✓ | 2026-02-03 |
 | 2. Dual-Axis Navigator | 0/1 | Not started | - |
 | 3. AI Content | 0/1 | Not started | - |
 | 4. Polish & Social | 0/1 | Not started | - |
