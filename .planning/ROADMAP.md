@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Map integration and dark theme shell ✓
 - [x] **Phase 2: Dual-Axis Navigator** - Time period and category selection controls ✓
-- [ ] **Phase 3: AI Content** - Claude API integration for location-aware content
+- [x] **Phase 3: AI Content** - Gemini API integration for location-aware content ✓
 - [ ] **Phase 4: Polish & Social** - Social map layer, POI markers, and demo readiness
 
 ## Phase Details
@@ -58,8 +58,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Config file, content panel markup and CSS with slide animation and loading skeleton
-- [ ] 03-02-PLAN.md — Gemini API service: fetch, debounce, cache, event wiring, auto-fetch
+- [x] 03-01-PLAN.md — Config file, content panel markup and CSS with slide animation and loading skeleton ✓
+- [x] 03-02-PLAN.md — Gemini API service: fetch, debounce, cache, event wiring, auto-fetch ✓
 
 ### Phase 4: Polish & Social
 **Goal**: Demo is presentation-ready with simulated social presence on the map and no visible broken states
@@ -84,5 +84,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|---------------|--------|-----------|
 | 1. Foundation | 1/1 | Complete ✓ | 2026-02-03 |
 | 2. Dual-Axis Navigator | 1/1 | Complete ✓ | 2026-02-03 |
-| 3. AI Content | 0/2 | Not started | - |
+| 3. AI Content | 2/2 | Complete ✓ | 2026-02-03 |
 | 4. Polish & Social | 0/1 | Not started | - |
