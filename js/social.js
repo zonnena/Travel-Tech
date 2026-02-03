@@ -5,94 +5,125 @@
 (function () {
   'use strict';
 
-  // Check if map is ready
   if (!window.geoMap) {
     console.warn('Map not ready - social layer skipped');
     return;
   }
 
-  // --- Constants ---
-  var DEFAULT_CENTER = [32.0853, 34.7818]; // Tel Aviv
-
-  // --- Friend Avatar Data ---
-  var friends = [
-    { name: 'Maya', lat: 32.0863, lng: 34.7828, emoji: '🧑‍🎨' },
-    { name: 'Ori', lat: 32.0843, lng: 34.7808, emoji: '🎸' },
-    { name: 'Noa', lat: 32.0873, lng: 34.7798, emoji: '📸' },
-    { name: 'Amit', lat: 32.0833, lng: 34.7838, emoji: '🏃' },
-    { name: 'Yael', lat: 32.0853, lng: 34.7848, emoji: '🎨' }
+  // --- Friend & POI templates (offsets from user position) ---
+  var friendTemplates = [
+    { name: 'Maya', dLat:  0.0010, dLng:  0.0010, emoji: '\uD83E\uDDD1\u200D\uD83C\uDFA8' },
+    { name: 'Ori',  dLat: -0.0010, dLng: -0.0010, emoji: '\uD83C\uDFB8' },
+    { name: 'Noa',  dLat:  0.0020, dLng: -0.0020, emoji: '\uD83D\uDCF8' },
+    { name: 'Amit', dLat: -0.0020, dLng:  0.0020, emoji: '\uD83C\uDFC3' },
+    { name: 'Yael', dLat:  0.0000, dLng:  0.0030, emoji: '\uD83C\uDFA8' }
   ];
 
-  // --- POI Data ---
-  var pois = [
-    { name: 'Ancient Market Square', lat: 32.0858, lng: 34.7823, type: 'market' },
-    { name: 'Historical Museum', lat: 32.0848, lng: 34.7813, type: 'museum' },
-    { name: 'Old Temple Ruins', lat: 32.0868, lng: 34.7803, type: 'temple' },
-    { name: 'Garden Park', lat: 32.0838, lng: 34.7833, type: 'park' },
-    { name: 'Archaeological Site', lat: 32.0863, lng: 34.7843, type: 'ruins' },
-    { name: 'Heritage Center', lat: 32.0843, lng: 34.7793, type: 'museum' }
+  var poiTemplates = [
+    { name: 'Ancient Market Square',  dLat:  0.0005, dLng:  0.0005, type: 'market' },
+    { name: 'Historical Museum',      dLat: -0.0005, dLng: -0.0005, type: 'museum' },
+    { name: 'Old Temple Ruins',       dLat:  0.0015, dLng: -0.0015, type: 'temple' },
+    { name: 'Garden Park',            dLat: -0.0015, dLng:  0.0015, type: 'park' },
+    { name: 'Archaeological Site',    dLat:  0.0010, dLng:  0.0025, type: 'ruins' },
+    { name: 'Heritage Center',        dLat: -0.0010, dLng: -0.0025, type: 'museum' }
   ];
 
-  // --- Create Friend Markers ---
+  // --- State ---
   var friendMarkers = [];
   var friendsLayer = L.layerGroup();
-
-  friends.forEach(function (friend) {
-    var iconHtml =
-      '<div class="friend-marker">' +
-      '<div class="friend-marker__emoji">' + friend.emoji + '</div>' +
-      '<div class="friend-marker__name">' + friend.name + '</div>' +
-      '</div>';
-
-    var icon = L.divIcon({
-      className: 'friend-marker-wrapper',
-      html: iconHtml,
-      iconSize: [40, 50],
-      iconAnchor: [20, 50]
-    });
-
-    var marker = L.marker([friend.lat, friend.lng], { icon: icon });
-    marker.friendData = friend; // Store original position
-    friendMarkers.push(marker);
-    friendsLayer.addLayer(marker);
-  });
-
-  // Add friends layer to map
-  window.geoMap.addLayer(friendsLayer);
-
-  // --- Friend Movement Animation ---
-  var movementInterval = setInterval(function () {
-    friendMarkers.forEach(function (marker) {
-      var currentPos = marker.getLatLng();
-      var randomLat = currentPos.lat + (Math.random() - 0.5) * 0.0004;
-      var randomLng = currentPos.lng + (Math.random() - 0.5) * 0.0004;
-      marker.setLatLng([randomLat, randomLng]);
-    });
-  }, 3000);
-
-  // --- Create POI Markers ---
   var poisLayer = L.layerGroup();
+  var markersPlaced = false;
+  var movementInterval = null;
 
-  pois.forEach(function (poi) {
-    var marker = L.circleMarker([poi.lat, poi.lng], {
-      radius: 6,
-      fillColor: 'var(--theme-accent)',
-      color: 'rgba(var(--theme-accent-rgb), 0.8)',
-      weight: 1,
-      fillOpacity: 0.7
+  function placeMarkers(centerLat, centerLng) {
+    if (markersPlaced) return;
+    markersPlaced = true;
+
+    // Create friend markers around the user's position
+    friendTemplates.forEach(function (f) {
+      var lat = centerLat + f.dLat;
+      var lng = centerLng + f.dLng;
+
+      var iconHtml =
+        '<div class="friend-marker">' +
+        '<div class="friend-marker__emoji">' + f.emoji + '</div>' +
+        '<div class="friend-marker__name">' + f.name + '</div>' +
+        '</div>';
+
+      var icon = L.divIcon({
+        className: 'friend-marker-wrapper',
+        html: iconHtml,
+        iconSize: [40, 50],
+        iconAnchor: [20, 50]
+      });
+
+      var marker = L.marker([lat, lng], { icon: icon });
+      friendMarkers.push(marker);
+      friendsLayer.addLayer(marker);
     });
 
-    marker.bindTooltip(poi.name, {
-      direction: 'top',
-      offset: [0, -6],
-      opacity: 0.9
+    window.geoMap.addLayer(friendsLayer);
+
+    // Animate friend movement
+    movementInterval = setInterval(function () {
+      friendMarkers.forEach(function (marker) {
+        var pos = marker.getLatLng();
+        marker.setLatLng([
+          pos.lat + (Math.random() - 0.5) * 0.0004,
+          pos.lng + (Math.random() - 0.5) * 0.0004
+        ]);
+      });
+    }, 3000);
+
+    // Create POI markers around the user's position
+    poiTemplates.forEach(function (p) {
+      var lat = centerLat + p.dLat;
+      var lng = centerLng + p.dLng;
+
+      var marker = L.circleMarker([lat, lng], {
+        radius: 6,
+        fillColor: '#f59e0b',
+        color: 'rgba(245, 158, 11, 0.8)',
+        weight: 1,
+        fillOpacity: 0.7
+      });
+
+      marker.bindTooltip(p.name, {
+        direction: 'top',
+        offset: [0, -6],
+        opacity: 0.9
+      });
+
+      poisLayer.addLayer(marker);
     });
 
-    poisLayer.addLayer(marker);
-  });
+    window.geoMap.addLayer(poisLayer);
+  }
 
-  // Add POIs layer to map
-  window.geoMap.addLayer(poisLayer);
+  // Wait for GPS position, fall back to map center after timeout
+  function waitForPosition() {
+    // If GPS already available, use it
+    if (window.geoState.position) {
+      placeMarkers(window.geoState.position.lat, window.geoState.position.lng);
+      return;
+    }
+
+    // Poll for GPS position, timeout after 5s and use map center
+    var attempts = 0;
+    var poll = setInterval(function () {
+      attempts++;
+      if (window.geoState.position) {
+        clearInterval(poll);
+        placeMarkers(window.geoState.position.lat, window.geoState.position.lng);
+      } else if (attempts > 10) {
+        clearInterval(poll);
+        var center = window.geoMap.getCenter();
+        placeMarkers(center.lat, center.lng);
+      }
+    }, 500);
+  }
+
+  waitForPosition();
 
   // --- Ghost Mode Toggle ---
   var ghostToggle = document.getElementById('ghost-toggle');
@@ -117,7 +148,6 @@
   var reopenBtn = document.getElementById('content-reopen');
 
   if (contentPanel && reopenBtn) {
-    // Show/hide reopen button based on bottom sheet state
     function isPanelVisible() {
       return contentPanel.classList.contains('content-panel--open') ||
              contentPanel.classList.contains('content-panel--expanded') ||
@@ -134,22 +164,17 @@
 
     panelObserver.observe(contentPanel, { attributes: true });
 
-    // Reopen panel to peek state when button clicked
     reopenBtn.addEventListener('click', function () {
       contentPanel.classList.add('content-panel--open');
       contentPanel.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
       contentPanel.style.transform = 'translateY(55%)';
     });
 
-    // Set initial state
     reopenBtn.style.display = isPanelVisible() ? 'none' : 'flex';
   }
 
-  // --- Cleanup on unload (optional) ---
   window.addEventListener('beforeunload', function () {
-    if (movementInterval) {
-      clearInterval(movementInterval);
-    }
+    if (movementInterval) clearInterval(movementInterval);
   });
 
 })();
