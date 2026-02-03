@@ -29,6 +29,23 @@
   <!-- Map Container -->
   <div id="map"></div>
 
+  <!-- Y-axis Time Period Selector (left side) -->
+  <nav id="time-axis" class="time-axis">
+    <button class="time-axis__item active" data-period="ancient">Ancient</button>
+    <button class="time-axis__item" data-period="medieval">Medieval</button>
+    <button class="time-axis__item" data-period="ottoman">Ottoman</button>
+    <button class="time-axis__item" data-period="modern">Modern</button>
+    <button class="time-axis__item" data-period="folklore">Folklore</button>
+  </nav>
+
+  <!-- X-axis Category Selector (bottom bar) -->
+  <nav id="category-bar" class="category-bar">
+    <button class="category-bar__item active" data-category="archaeology">Archaeology</button>
+    <button class="category-bar__item" data-category="nature">Nature</button>
+    <button class="category-bar__item" data-category="religion">Religion</button>
+    <button class="category-bar__item" data-category="geology">Geology</button>
+  </nav>
+
   <!-- GPS Status Pill -->
   <div id="status-pill" class="status-pill">
     <span class="status-pill__dot"></span>
