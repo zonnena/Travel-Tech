@@ -70,10 +70,10 @@ Plans:
   2. Ghost Mode toggle hides and shows friend avatars on the map
   3. POI markers appear on the map for nearby points of interest
   4. The full app flow works end-to-end on a phone browser with no broken or empty states visible during demo
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 04-01: Social avatar layer, Ghost Mode toggle, POI markers, and end-to-end demo polish
+- [ ] 04-01-PLAN.md — Social avatar layer, Ghost Mode toggle, POI markers, and end-to-end demo polish
 
 ## Progress
 
