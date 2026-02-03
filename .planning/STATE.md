@@ -5,33 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-03)
 
 **Core value:** Standing somewhere and feeling deeply connected to that place through personalized, layered information
-**Current focus:** Phase 2 - Dual-Axis Navigator
+**Current focus:** Phase 3 - AI Content Engine
 
 ## Current Position
 
 Phase: 2 of 4 (Dual-Axis Navigator)
-Plan: 0 of 1 in current phase
-Status: Ready to plan
-Last activity: 2026-02-03 -- Phase 1 complete
+Plan: 1 of 1 in current phase
+Status: Phase complete
+Last activity: 2026-02-03 -- Completed 02-01-PLAN.md
 
-Progress: [██░░░░░░░░] 25%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: -
-- Total execution time: -
+- Total plans completed: 2
+- Average duration: ~2min
+- Total execution time: ~2min (Phase 2)
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 - Foundation | 1/1 | - | - |
+| 2 - Dual-Axis Navigator | 1/1 | 2min | 2min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01
-- Trend: N/A
+- Last 5 plans: 01-01, 02-01
+- Trend: Fast execution
 
 *Updated after each plan completion*
 
@@ -47,6 +48,9 @@ Recent decisions affecting current work:
 - Using Leaflet + OpenStreetMap with CartoDB dark tiles (no API key needed)
 - Using Gemini API for AI content (key saved in .env)
 - Server running on port 5173
+- Theme switching via CSS custom properties on body class (no JS inline styles)
+- Event delegation with closest() for button click handling
+- window.geoState as global state bridge between IIFE modules
 
 ### Pending Todos
 
@@ -54,10 +58,10 @@ None.
 
 ### Blockers/Concerns
 
-- Gemini API key saved in .env — ready for Phase 3
+- Gemini API key saved in .env -- ready for Phase 3
 
 ## Session Continuity
 
 Last session: 2026-02-03
-Stopped at: Phase 1 complete, ready to plan Phase 2
+Stopped at: Completed 02-01-PLAN.md, Phase 2 complete
 Resume file: None
