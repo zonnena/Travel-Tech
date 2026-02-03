@@ -266,7 +266,7 @@ window.geoState = {
     function onMove(e) {
       if (!self.dragging) return;
       var pos = getPos(e);
-      var delta = self.lastPos - pos;
+      var delta = pos - self.lastPos;
       var now = Date.now();
       var dt = now - self.lastTime || 16;
 
@@ -309,8 +309,8 @@ window.geoState = {
       self.rotor.style.transition = '';
 
       var rawDelta = self.axis === 'vertical' ? e.deltaY : (e.deltaX || e.deltaY);
-      // Invert vertical so scroll-up advances the wheel (like pushing a real wheel surface upward)
-      var delta = self.axis === 'vertical' ? -rawDelta : rawDelta;
+      // Invert so scroll direction matches visual rotation
+      var delta = self.axis === 'vertical' ? rawDelta : -rawDelta;
       var angleDelta = (delta > 0 ? 1 : -1) * ITEM_ANGLE;
       var target = Math.round(self.currentAngle / ITEM_ANGLE) * ITEM_ANGLE + angleDelta;
       target = Math.max(0, Math.min(target, self.maxAngle));
