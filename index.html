@@ -96,6 +96,12 @@
   <!-- Content Panel Reopen Button -->
   <button id="content-reopen" class="content-reopen" aria-label="Reopen Content Panel" style="display: none;">📖</button>
 
+  <!-- Nearby Places Button -->
+  <button id="poi-list-toggle" class="poi-list-toggle" aria-label="Nearby Places">
+    <span class="poi-list-toggle__icon">📍</span>
+    <span class="poi-list-toggle__label">Places</span>
+  </button>
+
   <!-- TTS Control Button -->
   <button id="tts-btn" class="tts-btn" aria-label="Read aloud" style="display: none;">
     <span id="tts-icon" class="tts-btn__icon">&#9654;</span>
@@ -129,6 +135,15 @@
       <!-- AI content goes here -->
       <div id="content-text" class="content-panel__text"></div>
     </div>
+  </div>
+
+  <!-- POI List Panel -->
+  <div id="poi-list-panel" class="poi-list-panel">
+    <div class="poi-list-panel__header">
+      <h2 class="poi-list-panel__title">Nearby Places</h2>
+      <button id="poi-list-close" class="content-panel__close" aria-label="Close list">&times;</button>
+    </div>
+    <div id="poi-list-items" class="poi-list-panel__items"></div>
   </div>
 
   <!-- Leaflet JS -->

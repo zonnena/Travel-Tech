@@ -159,6 +159,76 @@
 
   waitForPosition();
 
+  // --- POI List Panel ---
+  var poiListToggle = document.getElementById('poi-list-toggle');
+  var poiListPanel = document.getElementById('poi-list-panel');
+  var poiListClose = document.getElementById('poi-list-close');
+  var poiListItems = document.getElementById('poi-list-items');
+
+  function renderStarsSimple(rating) {
+    var filled = Math.round(rating);
+    var s = '';
+    for (var i = 0; i < 5; i++) s += i < filled ? '\u2605' : '\u2606';
+    return s;
+  }
+
+  function buildPoiList() {
+    if (!poiListItems) return;
+    poiListItems.innerHTML = '';
+    poiTemplates.forEach(function (p) {
+      var color = periodColors[p.period] || '#f59e0b';
+      var period = p.period.charAt(0).toUpperCase() + p.period.slice(1);
+      var category = p.category.charAt(0).toUpperCase() + p.category.slice(1);
+
+      var item = document.createElement('div');
+      item.className = 'poi-list-item';
+      item.innerHTML =
+        '<div class="poi-list-item__dot" style="background:' + color + '; box-shadow: 0 0 4px ' + color + ';"></div>' +
+        '<div class="poi-list-item__info">' +
+          '<div class="poi-list-item__name">' + p.name + '</div>' +
+          '<div class="poi-list-item__meta">' + period + ' &middot; ' + category + '</div>' +
+        '</div>' +
+        '<div class="poi-list-item__rating">' +
+          '<div class="poi-list-item__stars">' + renderStarsSimple(p.rating) + '</div>' +
+          '<div class="poi-list-item__count">' + p.rating.toFixed(1) + ' (' + p.ratingCount + ')</div>' +
+        '</div>';
+
+      item.addEventListener('click', function () {
+        closePoiList();
+        if (window.showPoiContent) {
+          window.showPoiContent(p);
+        }
+      });
+
+      poiListItems.appendChild(item);
+    });
+  }
+
+  function openPoiList() {
+    if (!poiListPanel) return;
+    buildPoiList();
+    poiListPanel.classList.add('poi-list-panel--open');
+  }
+
+  function closePoiList() {
+    if (!poiListPanel) return;
+    poiListPanel.classList.remove('poi-list-panel--open');
+  }
+
+  if (poiListToggle) {
+    poiListToggle.addEventListener('click', function () {
+      if (poiListPanel.classList.contains('poi-list-panel--open')) {
+        closePoiList();
+      } else {
+        openPoiList();
+      }
+    });
+  }
+
+  if (poiListClose) {
+    poiListClose.addEventListener('click', closePoiList);
+  }
+
   // --- Ghost Mode Toggle ---
   var ghostToggle = document.getElementById('ghost-toggle');
   var ghostModeActive = false;
