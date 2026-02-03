@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoLayers — Explore Your World</title>
+
+  <!-- Google Fonts: Space Grotesk + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header / Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar__content">
+      <h1 class="top-bar__title">GeoLayers</h1>
+      <p class="top-bar__tagline">Discover layers of history beneath your feet</p>
+    </div>
+  </header>
+
+  <!-- Map Container -->
+  <div id="map"></div>
+
+  <!-- GPS Status Pill -->
+  <div id="status-pill" class="status-pill">
+    <span class="status-pill__dot"></span>
+    <span id="status-text">Locating...</span>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- App script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
