@@ -41,10 +41,10 @@ Plans:
   2. User can slide or tap to select a content category on the X-axis (Archaeology, Nature, Religion, Geology)
   3. Changing the time period produces a visible color or theme shift in the UI
   4. Transitions between selections are smooth (no jank or stutter)
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 02-01: Y-axis time period control, X-axis category control, visual feedback and transition animations
+- [ ] 02-01-PLAN.md — Y-axis time period selector, X-axis category bar, theme color shifts, global state and custom events
 
 ### Phase 3: AI Content
 **Goal**: User sees rich, AI-generated historical/cultural content that updates based on their location and navigator selections
