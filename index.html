@@ -29,22 +29,32 @@
   <!-- Map Container -->
   <div id="map"></div>
 
-  <!-- Y-axis Time Period Selector (left side) -->
-  <nav id="time-axis" class="time-axis">
-    <button class="time-axis__item active" data-period="ancient">Ancient</button>
-    <button class="time-axis__item" data-period="medieval">Medieval</button>
-    <button class="time-axis__item" data-period="ottoman">Ottoman</button>
-    <button class="time-axis__item" data-period="modern">Modern</button>
-    <button class="time-axis__item" data-period="folklore">Folklore</button>
-  </nav>
+  <!-- Y-axis Time Period Wheel (left side, vertical) -->
+  <div id="time-axis" class="wheel-picker wheel-picker--vertical">
+    <div class="wheel-picker__highlight"></div>
+    <div class="wheel-picker__mask wheel-picker__mask--top"></div>
+    <div class="wheel-picker__mask wheel-picker__mask--bottom"></div>
+    <div class="wheel-picker__rotor" id="time-rotor">
+      <div class="wheel-picker__item" data-period="ancient">Ancient</div>
+      <div class="wheel-picker__item" data-period="medieval">Medieval</div>
+      <div class="wheel-picker__item" data-period="ottoman">Ottoman</div>
+      <div class="wheel-picker__item" data-period="modern">Modern</div>
+      <div class="wheel-picker__item" data-period="folklore">Folklore</div>
+    </div>
+  </div>
 
-  <!-- X-axis Category Selector (bottom bar) -->
-  <nav id="category-bar" class="category-bar">
-    <button class="category-bar__item active" data-category="archaeology">Archaeology</button>
-    <button class="category-bar__item" data-category="nature">Nature</button>
-    <button class="category-bar__item" data-category="religion">Religion</button>
-    <button class="category-bar__item" data-category="geology">Geology</button>
-  </nav>
+  <!-- X-axis Category Wheel (bottom, horizontal) -->
+  <div id="category-bar" class="wheel-picker wheel-picker--horizontal">
+    <div class="wheel-picker__highlight"></div>
+    <div class="wheel-picker__mask wheel-picker__mask--left"></div>
+    <div class="wheel-picker__mask wheel-picker__mask--right"></div>
+    <div class="wheel-picker__rotor" id="category-rotor">
+      <div class="wheel-picker__item" data-category="archaeology">Archaeology</div>
+      <div class="wheel-picker__item" data-category="nature">Nature</div>
+      <div class="wheel-picker__item" data-category="religion">Religion</div>
+      <div class="wheel-picker__item" data-category="geology">Geology</div>
+    </div>
+  </div>
 
   <!-- GPS Status Pill -->
   <div id="status-pill" class="status-pill">

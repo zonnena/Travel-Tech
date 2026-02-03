@@ -126,94 +126,172 @@ body.theme-folklore {
   right: 0;
 }
 
-/* --- Y-axis Time Period Selector --- */
-.time-axis {
+/* --- 3D Wheel Picker (shared) --- */
+.wheel-picker {
   position: fixed;
+  z-index: 1100;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.wheel-picker__rotor {
+  position: absolute;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.wheel-picker__item {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: color 0.2s ease;
+}
+
+.wheel-picker__item.active {
+  color: var(--theme-accent);
+  font-weight: 600;
+  text-shadow: 0 0 10px var(--theme-glow);
+}
+
+/* --- Highlight bar (selection indicator) --- */
+.wheel-picker__highlight {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.35);
+  border-radius: 6px;
+  background: rgba(var(--theme-accent-rgb), 0.06);
+  transition: border-color 0.5s ease, background 0.5s ease;
+}
+
+/* --- Vertical Wheel (Time Axis, left side) --- */
+.wheel-picker--vertical {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 8px;
-  background: rgba(18, 18, 26, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  width: 100px;
+  height: 180px;
   border-right: 1px solid rgba(var(--theme-accent-rgb), 0.15);
   border-radius: 0 12px 12px 0;
-  z-index: 1100;
+  perspective: 300px;
   transition: border-right-color 0.5s ease;
 }
 
-.time-axis__item {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  padding: 10px 14px;
-  font-size: 11px;
-  font-family: var(--font-body);
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  will-change: transform, opacity;
+.wheel-picker--vertical .wheel-picker__rotor {
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  width: 0;
+  height: 0;
 }
 
-.time-axis__item.active {
-  color: var(--theme-accent);
-  background: rgba(var(--theme-accent-rgb), 0.12);
-  box-shadow: 0 0 12px var(--theme-glow);
+.wheel-picker--vertical .wheel-picker__item {
+  left: -50px;
+  top: -16px;
+  width: 100px;
+  height: 32px;
 }
 
-.time-axis__item:not(.active):hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
+.wheel-picker--vertical .wheel-picker__highlight {
+  left: 6px;
+  right: 6px;
+  top: 50%;
+  height: 34px;
+  transform: translateY(-50%);
 }
 
-/* --- X-axis Category Bar --- */
-.category-bar {
-  position: fixed;
+.wheel-picker--vertical .wheel-picker__mask--top,
+.wheel-picker--vertical .wheel-picker__mask--bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 45%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.wheel-picker--vertical .wheel-picker__mask--top {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(18, 18, 26, 0.9), transparent);
+  border-radius: 0 12px 0 0;
+}
+
+.wheel-picker--vertical .wheel-picker__mask--bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(18, 18, 26, 0.9), transparent);
+  border-radius: 0 0 12px 0;
+}
+
+/* --- Horizontal Wheel (Category Bar, bottom) --- */
+.wheel-picker--horizontal {
   bottom: 54px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-  padding: 6px 10px;
-  background: rgba(18, 18, 26, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  width: 300px;
+  height: 52px;
   border: 1px solid rgba(var(--theme-accent-rgb), 0.15);
   border-radius: 16px;
-  z-index: 1100;
+  perspective: 300px;
   transition: border-color 0.5s ease;
 }
 
-.category-bar__item {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  padding: 8px 16px;
-  font-size: 12px;
-  font-family: var(--font-body);
-  cursor: pointer;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-  will-change: transform, opacity;
+.wheel-picker--horizontal .wheel-picker__rotor {
+  left: 50%;
+  top: 50%;
+  transform-origin: center center;
+  width: 0;
+  height: 0;
 }
 
-.category-bar__item.active {
-  color: #fff;
-  background: var(--theme-accent);
-  box-shadow: 0 0 12px var(--theme-glow);
-  font-weight: 600;
+.wheel-picker--horizontal .wheel-picker__item {
+  left: -55px;
+  top: -16px;
+  width: 110px;
+  height: 32px;
 }
 
-.category-bar__item:not(.active):hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
+.wheel-picker--horizontal .wheel-picker__highlight {
+  top: 6px;
+  bottom: 6px;
+  left: 50%;
+  width: 112px;
+  transform: translateX(-50%);
+}
+
+.wheel-picker--horizontal .wheel-picker__mask--left,
+.wheel-picker--horizontal .wheel-picker__mask--right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.wheel-picker--horizontal .wheel-picker__mask--left {
+  left: 0;
+  background: linear-gradient(to right, rgba(18, 18, 26, 0.9), transparent);
+  border-radius: 16px 0 0 16px;
+}
+
+.wheel-picker--horizontal .wheel-picker__mask--right {
+  right: 0;
+  background: linear-gradient(to left, rgba(18, 18, 26, 0.9), transparent);
+  border-radius: 0 16px 16px 0;
 }
 
 /* --- User Marker (Pulsing Dot) --- */
@@ -613,23 +691,31 @@ body.theme-folklore {
     padding: 6px 12px;
   }
 
-  .time-axis {
-    padding: 6px;
+  .wheel-picker--vertical {
+    width: 80px;
+    height: 150px;
   }
 
-  .time-axis__item {
+  .wheel-picker--vertical .wheel-picker__item {
+    left: -40px;
+    width: 80px;
     font-size: 10px;
-    padding: 6px 10px;
   }
 
-  .category-bar {
+  .wheel-picker--horizontal {
+    width: 260px;
+    height: 46px;
     bottom: 46px;
-    gap: 4px;
   }
 
-  .category-bar__item {
-    font-size: 11px;
-    padding: 6px 12px;
+  .wheel-picker--horizontal .wheel-picker__item {
+    font-size: 10px;
+    left: -48px;
+    width: 96px;
+  }
+
+  .wheel-picker--horizontal .wheel-picker__highlight {
+    width: 98px;
   }
 
   .content-panel {
