@@ -143,7 +143,6 @@ body.theme-folklore {
   background: rgba(18, 18, 26, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transform-style: preserve-3d;
 }
 
 .wheel-picker__rotor {

@@ -165,6 +165,8 @@ window.geoState = {
   };
 
   WheelPicker.prototype._updateSelection = function (index, silent) {
+    if (this.items.length === 0) return;
+
     if (index < 0) index = 0;
     if (index >= this.items.length) index = this.items.length - 1;
 

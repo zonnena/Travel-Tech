@@ -430,6 +430,9 @@
       return;
     }
 
+    // OpenAI TTS has a 4096 char limit — truncate if needed
+    var ttsInput = text.length > 4000 ? text.substring(0, 4000) : text;
+
     setTtsState('speaking');
 
     fetch(config.OPENAI_TTS_ENDPOINT, {
@@ -441,7 +444,7 @@
       body: JSON.stringify({
         model: config.OPENAI_TTS_MODEL || 'tts-1',
         voice: config.OPENAI_TTS_VOICE || 'nova',
-        input: text
+        input: ttsInput
       })
     })
     .then(function (response) {
@@ -454,7 +457,7 @@
       var url = URL.createObjectURL(blob);
       if (audioElement) {
         audioElement.pause();
-        URL.revokeObjectURL(audioElement.src);
+        if (audioElement.src) URL.revokeObjectURL(audioElement.src);
       }
       audioElement = new Audio(url);
       audioElement.onended = function () {
@@ -463,11 +466,17 @@
       audioElement.onerror = function () {
         setTtsState('ready');
       };
-      audioElement.play();
+      var playPromise = audioElement.play();
+      if (playPromise && playPromise.catch) {
+        playPromise.catch(function () {
+          // Autoplay blocked — user must tap play button
+          setTtsState('ready');
+        });
+      }
       useBrowserTTS = false;
     })
-    .catch(function () {
-      // Fallback to browser TTS
+    .catch(function (err) {
+      console.warn('OpenAI TTS failed, falling back to browser:', err);
       speakWithBrowser(text);
     });
   }
