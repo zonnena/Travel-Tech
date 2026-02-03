@@ -1,0 +1,237 @@
+/* ============================================================
+   GeoLayers — Dark Neon Gen-Z Theme
+   ============================================================ */
+
+/* --- Custom Properties --- */
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-surface: #1a1a2e;
+  --neon-cyan: #00f0ff;
+  --neon-magenta: #ff00aa;
+  --neon-purple: #8b5cf6;
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0b0;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --header-height: 56px;
+}
+
+/* --- Global Reset --- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Header / Top Bar --- */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 1100;
+}
+
+.top-bar__content {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.top-bar__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  text-shadow:
+    0 0 8px rgba(0, 240, 255, 0.5),
+    0 0 20px rgba(0, 240, 255, 0.2);
+}
+
+.top-bar__tagline {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Map Container --- */
+#map {
+  position: absolute;
+  top: var(--header-height);
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* --- User Marker (Pulsing Dot) --- */
+.user-marker {
+  width: 16px;
+  height: 16px;
+  background: var(--neon-cyan);
+  border-radius: 50%;
+  box-shadow:
+    0 0 8px var(--neon-cyan),
+    0 0 20px rgba(0, 240, 255, 0.4);
+  position: relative;
+}
+
+.user-marker::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  background: var(--neon-cyan);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* --- Status Pill --- */
+.status-pill {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(26, 26, 46, 0.9);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  z-index: 1100;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.status-pill__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  transition: background 0.3s ease;
+}
+
+.status-pill--active .status-pill__dot {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 6px var(--neon-cyan);
+}
+
+/* --- Glow Utilities (for future use) --- */
+.glow-cyan {
+  box-shadow:
+    0 0 15px var(--neon-cyan),
+    0 0 30px rgba(0, 240, 255, 0.3);
+}
+
+.glow-magenta {
+  box-shadow:
+    0 0 15px var(--neon-magenta),
+    0 0 30px rgba(255, 0, 170, 0.3);
+}
+
+.glow-purple {
+  box-shadow:
+    0 0 15px var(--neon-purple),
+    0 0 30px rgba(139, 92, 246, 0.3);
+}
+
+/* --- Leaflet Overrides (Dark Theme) --- */
+.leaflet-control-attribution {
+  background: rgba(10, 10, 15, 0.8) !important;
+  color: var(--text-secondary) !important;
+  font-size: 10px !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--neon-purple) !important;
+}
+
+.leaflet-control-zoom a {
+  background: var(--bg-surface) !important;
+  color: var(--neon-cyan) !important;
+  border-color: rgba(0, 240, 255, 0.2) !important;
+  transition: box-shadow 0.2s ease;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--bg-secondary) !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+/* --- Responsive: Mobile (<= 480px) --- */
+@media (max-width: 480px) {
+  :root {
+    --header-height: 48px;
+  }
+
+  .top-bar {
+    padding: 0 14px;
+  }
+
+  .top-bar__title {
+    font-size: 1.1rem;
+  }
+
+  .top-bar__tagline {
+    font-size: 0.65rem;
+  }
+
+  .status-pill {
+    bottom: 14px;
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}
+
+/* --- Responsive: Desktop (>= 1024px) --- */
+@media (min-width: 1024px) {
+  .top-bar__title {
+    font-size: 1.5rem;
+  }
+
+  .top-bar__tagline {
+    font-size: 0.8rem;
+  }
+}
