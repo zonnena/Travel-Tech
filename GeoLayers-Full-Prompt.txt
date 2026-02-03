@@ -1,0 +1,419 @@
+Build "GeoLayers" — A Location-Based Historical Explorer PWA
+
+Build a mobile-first Progressive Web App called GeoLayers that lets users explore layers of history at their current location. The app shows an interactive dark-themed map, lets users select time periods and content categories via 3D scroll wheels, displays rich educational content in a draggable bottom sheet, reads content aloud via text-to-speech, shows friend avatars and points of interest on the map, and works offline as an installable PWA.
+
+== Tech Stack ==
+
+- Pure vanilla HTML/CSS/JavaScript — no frameworks, no build tools, no npm
+- Leaflet.js (v1.9.4, loaded from CDN) for the interactive map
+- Google Fonts: Space Grotesk (display headings) + Inter (body text)
+- CARTO dark basemap tiles: https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png
+- OpenAI TTS API for text-to-speech (with browser speechSynthesis fallback)
+- Service Worker for offline caching (network-first strategy)
+
+== File Structure ==
+
+index.html          — Single-page app shell
+css/style.css       — All styles (mobile-first, responsive breakpoints at 768px and 1024px)
+js/config.js        — API keys and endpoint configuration
+js/app.js           — Map initialization, GPS, wheel pickers, timeline drawer
+js/ai.js            — Content database, bottom sheet, TTS engine, POI content display
+js/social.js        — Friend avatars, POI markers, ghost mode, POI list panel
+sw.js               — Service worker (network-first with offline cache fallback)
+manifest.json       — PWA manifest (standalone, portrait, dark theme)
+icons/icon-192.png  — App icon 192x192
+icons/icon-512.png  — App icon 512x512
+
+================================================================================
+DESIGN SYSTEM & THEME
+================================================================================
+
+Color System
+------------
+The app uses a dark neon cyberpunk aesthetic with CSS custom properties that change dynamically based on the selected time period:
+
+Base colors:
+  --bg-primary: #0a0a0f (near-black)
+  --bg-secondary: #12121a
+  --bg-surface: #1a1a2e
+  --neon-cyan: #00f0ff
+  --neon-magenta: #ff00aa
+  --neon-purple: #8b5cf6
+  --text-primary: #f0f0f0
+  --text-secondary: #a0a0b0
+
+Period theme accent colors (applied as body class "theme-{period}"):
+  Ancient:  #f59e0b (warm amber)      RGB: 245, 158, 11
+  Medieval: #a0845c (aged brown)      RGB: 160, 132, 92
+  Ottoman:  #14b8a6 (teal)            RGB: 20, 184, 166
+  Modern:   #3b82f6 (blue)            RGB: 59, 130, 246
+  Folklore: #d946ef (purple/magenta)  RGB: 217, 70, 239
+
+Each theme color is also exposed as --theme-accent-rgb (comma-separated RGB values) for use in rgba() throughout the CSS. All UI borders, glows, highlights, and accents use these theme variables so the entire UI shifts color when the user changes time period.
+
+Typography
+----------
+- Display/headings: Space Grotesk weight 500/700
+- Body/UI: Inter weight 400/500/600
+- Font sizes are small and compact for mobile: 9-14px for UI elements, 0.92rem for body text
+
+Glass Morphism
+--------------
+All overlays use: background: rgba(18, 18, 26, 0.85); backdrop-filter: blur(10px);
+
+Safe Area Insets
+----------------
+All positioning uses CSS env(safe-area-inset-*) for notched phones.
+
+================================================================================
+FEATURE 1: INTERACTIVE MAP WITH GPS
+================================================================================
+
+Map Setup
+---------
+- Full-screen Leaflet map positioned below a fixed header bar
+- CARTO dark basemap tiles with subdomains abcd, maxZoom 19
+- Default center: Tel Aviv [32.0853, 34.7818], zoom level 15
+- Leaflet controls restyled to match dark theme (dark backgrounds, cyan text)
+
+GPS Positioning
+---------------
+- Request geolocation.getCurrentPosition with high accuracy on load
+- On success: flyTo user's position, place a pulsing cyan user marker
+- Continuously track with watchPosition (30s max age)
+- On failure: show "GPS unavailable — showing Tel Aviv" in status pill
+- User marker: 16px cyan circle with a ::before pseudo-element that animates an infinite outward pulse (scale 1 to 2.5, opacity 0.8 to 0)
+
+GPS Status Pill
+---------------
+- Fixed at bottom center of screen
+- Small rounded pill showing "Locating..." initially, then "GPS Active" with a glowing cyan dot when GPS locks
+
+Global State
+------------
+Expose window.geoState object with: timePeriod, category, year, position — accessible by all modules. Also expose window.geoMap (the Leaflet map instance).
+
+================================================================================
+FEATURE 2: 3D CYLINDRICAL SCROLL WHEEL PICKERS
+================================================================================
+
+Build a reusable WheelPicker class that renders items on a 3D CSS cylinder using transform-style: preserve-3d, rotateX/rotateY, and translateZ. The wheel supports:
+
+Mechanics
+---------
+- Items positioned at 40-degree intervals on a cylinder with 90px translateZ radius
+- Touch drag, mouse drag, mouse wheel, and click-to-select input
+- Momentum physics: velocity tracking during drag, deceleration factor 0.95, snap to nearest item when velocity < 0.3
+- Rubber-band effect: items can be dragged 15 degrees past the first/last item, with spring-back
+- perspective: 300px on the container for 3D depth
+- Animated transitions use cubic-bezier(0.4, 0, 0.2, 1) easing, 300ms duration
+
+Visual
+------
+- Frosted glass background containers
+- Active item is highlighted in theme accent color with glow text-shadow
+- Selection highlight bar: translucent rounded rectangle with accent border behind the active item
+- Top/bottom (or left/right) gradient masks fade items at the edges
+
+Three Wheel Instances
+---------------------
+
+1. Time Period Wheel (vertical, inside collapsible left drawer)
+   - Items: Ancient, Medieval, Ottoman, Modern, Folklore
+   - On selection: updates geoState.timePeriod, swaps body theme class, rebuilds year wheel, dispatches timePeriodChange event
+
+2. Year Wheel (vertical, right of period wheel in the drawer)
+   - Dynamically rebuilt when period changes with appropriate year ranges:
+     - Ancient: 3000 BCE, 2000 BCE, 1000 BCE, 1 CE, 500 CE
+     - Medieval: 500-1400 (100-year intervals)
+     - Ottoman: 1500-1900 (100-year intervals)
+     - Modern: 1900, 1950, 2000
+     - Folklore: Myths, Legends, Oral Lore, Living Tales
+   - On selection: updates geoState.year
+
+3. Category Wheel (horizontal, fixed at bottom center)
+   - Items: Archaeology, Nature, Religion, Geology
+   - Rounded pill container (260px wide, 46px tall, border-radius 16px)
+   - On selection: updates geoState.category, dispatches categoryChange event
+
+================================================================================
+FEATURE 3: COLLAPSIBLE TIMELINE DRAWER
+================================================================================
+
+The period and year wheels live inside a collapsible left-side drawer that slides in/out:
+
+Structure
+---------
+- Fixed, vertically centered on the left edge
+- Contains the period wheel (80px wide) + year wheel (70px wide) side by side
+- A small tab handle (22px wide, 56px tall) on the right edge with a chevron arrow
+- Starts collapsed (translated off-screen to the left)
+
+Interactions
+------------
+- Tap tab to toggle open/closed
+- Edge swipe: touching within 25px of left screen edge and dragging right opens the drawer
+- Swipe left on the drawer to close it
+- Tap outside the drawer to close it
+- Velocity-based snap: fast swipe (>0.3 px/ms) snaps open/closed; slow drag snaps based on position (halfway threshold)
+- Mouse support for desktop testing
+- Chevron arrow rotates when drawer state changes
+
+================================================================================
+FEATURE 4: AI CONTENT BOTTOM SHEET
+================================================================================
+
+A draggable bottom sheet that displays educational text content. It has four states managed by CSS transforms on a 70vh height panel:
+
+Sheet States
+------------
+- Hidden: translateY(100%) — completely off screen
+- Peek: translateY(55%) — shows ~45% of the sheet (title + some content)
+- Expanded: translateY(0) — full sheet visible
+- Collapsed: translateY(calc(100% - 60px)) — just the drag handle and title visible
+
+Drag Behavior
+-------------
+- Drag handle at top (36px wide bar, grabbable)
+- Touch and mouse drag support
+- Velocity-based transitions: fast swipe up/down moves one state; slow drag snaps to nearest state based on position thresholds (25%, 75%)
+- Tapping the handle when collapsed opens to peek
+
+Content
+-------
+- Header: title (accent colored), "AI Generated" badge, optional star rating row, close button
+- Listen/Read mode toggle: two pill buttons below header
+- Body: scrollable area with loading skeleton animation (shimmer effect) and rendered paragraph text
+- Close button hides the sheet and stops any playing audio
+
+Content Database
+----------------
+A hardcoded contentDB object with 20 entries — every combination of 5 periods x 4 categories. Keys are formatted as "period|category" (e.g. "ancient|archaeology"). Each entry has a title and multi-paragraph text (3 paragraphs per entry, ~150 words each, separated by double newlines).
+
+The content is educational text about the Holy Land / Israel region covering:
+- Ancient archaeology, nature, religion, geology
+- Medieval archaeology, nature, religion, geology
+- Ottoman archaeology, nature, religion, geology
+- Modern archaeology, nature, religion, geology
+- Folklore combined with archaeology, nature, religion, geology
+
+Content Fetching
+----------------
+- On period or category wheel change: 300ms debounced fetch
+- Shows loading skeleton, opens panel to peek
+- After 600ms delay (simulated), renders content paragraphs as <p> tags
+- Auto-fetches on first load after 1 second
+
+================================================================================
+FEATURE 5: TEXT-TO-SPEECH (TTS)
+================================================================================
+
+Dual TTS Engine
+---------------
+1. Primary: OpenAI TTS API — POST to https://api.openai.com/v1/audio/speech with model tts-1, voice nova. Receives audio blob, creates Audio element, plays it. 4096 character limit (truncate if needed).
+2. Fallback: Browser speechSynthesis — used when OpenAI fails or no API key. Prefers Google/natural English voices.
+
+TTS States & UI
+----------------
+- Floating circular button (44px, fixed bottom-right, z-index 1250)
+- States: ready (play triangle), speaking (pause bars with pulsing border animation), paused (play triangle dimmed), finished (replay arrow with dashed border)
+- Toggle button cycles: ready->speaking, speaking->paused, paused->speaking, finished->speaking
+
+Listen / Read Mode
+------------------
+- Two toggle buttons in the sheet header
+- Listen mode (default): auto-plays TTS when content loads
+- Read mode: stops any playing audio, content is read-only
+
+Shake to Toggle
+---------------
+- Uses DeviceMotionEvent accelerometer data
+- Shake threshold: acceleration magnitude deviation > 15 from gravity (9.8)
+- 1-second debounce between shake events
+- Shake while speaking/paused -> stop; shake while ready -> start speaking
+
+Config
+------
+Store OpenAI API key (base64-encoded), endpoint URLs, TTS model and voice in js/config.js as a global GEO_CONFIG object.
+
+================================================================================
+FEATURE 6: SOCIAL LAYER — FRIEND AVATARS
+================================================================================
+
+Friend Markers
+--------------
+5 demo friends placed at offsets (100m-300m) from user position:
+- Maya (artist emoji), Ori (guitar), Noa (camera), Amit (runner), Yael (art)
+- Each rendered as a L.divIcon with emoji + name label below
+- Emoji has a cyan drop-shadow glow
+- Name in a small dark pill label
+- pointer-events: none so they don't interfere with map interaction
+
+Friend Movement
+---------------
+- Every 3 seconds, each friend marker randomly shifts +/-0.0002 degrees in lat/lng (simulated walking)
+
+Ghost Mode
+----------
+- Toggle button in top-right corner (below header): ghost emoji + "Ghost Mode" label
+- When active: hides all friend markers from the map (removes friend layer), purple highlight on button
+- When inactive: shows friends again
+
+================================================================================
+FEATURE 7: INTERACTIVE POINTS OF INTEREST (POIs)
+================================================================================
+
+15 POI Markers
+--------------
+Each POI has: name, map offset from user (200m-500m spread), type (temple/ruins/museum/park/market/cave), category (archaeology/nature/religion/geology), period (ancient/medieval/ottoman/modern/folklore), rating (random 3.5-5.0, generated once), ratingCount (random 12-340).
+
+POI list:
+  Temple of the Sun       — temple  — religion    — ancient
+  Bronze Age Excavation   — ruins   — archaeology — ancient
+  Roman Aqueduct Remains  — ruins   — archaeology — medieval
+  Crusader Watchtower     — ruins   — archaeology — medieval
+  Ottoman Bathhouse       — museum  — archaeology — ottoman
+  Suleiman's Fountain     — market  — geology     — ottoman
+  Heritage Museum         — museum  — archaeology — modern
+  Nature Reserve Trail    — park    — nature      — modern
+  Sacred Grove            — park    — nature      — folklore
+  Prophet's Cave          — cave    — religion    — folklore
+  Geological Overlook     — park    — geology     — ancient
+  Old City Marketplace    — market  — archaeology — ottoman
+  Monastery Ruins         — ruins   — religion    — medieval
+  Wildflower Meadow       — park    — nature      — ancient
+  Fossil Cliff            — cave    — geology     — modern
+
+POI Marker Rendering
+--------------------
+- L.divIcon with a 14px colored circle (.poi-marker class)
+- Color matches the POI's period theme color (amber/brown/teal/blue/purple)
+- White semi-transparent border, colored box-shadow glow
+- Invisible ::before pseudo-element extends tap target by 10px in all directions
+- Scale-up animation on :active (1.4x)
+
+POI Tooltip
+-----------
+- Leaflet tooltip on hover showing: "POI Name (star) 4.3"
+- Dark themed tooltip matching the app style
+
+POI Click -> Content
+--------------------
+When a POI marker is tapped:
+1. Calls window.showPoiContent(poi) (exposed globally from ai.js)
+2. Stops any playing audio
+3. Looks up content from contentDB using key poi.period + '|' + poi.category
+4. Shows loading skeleton, opens bottom sheet to peek
+5. After 400ms, displays: POI name as title, star rating row, content text from the database
+6. Star rating rendered as filled and empty star characters (rounded to nearest integer), plus numeric rating and review count (e.g. "4 filled stars 1 empty star 4.3 · 89 reviews")
+7. When wheel-based content loads, the POI rating row is hidden
+
+================================================================================
+FEATURE 8: NEARBY PLACES LIST
+================================================================================
+
+A "Places" button and scrollable list panel for browsing all POIs without needing to find them on the map:
+
+Button
+------
+- Fixed top bar, positioned left of the Ghost Mode button
+- Pin emoji + "Places" label, same glass-morphism style as Ghost Mode button
+- Tapping toggles the POI list panel open/closed
+
+List Panel
+----------
+- Full-width bottom sheet (z-index 1300, above content panel)
+- Slides up from bottom with same animation as content panel
+- Header: "Nearby Places" title + close button
+- Scrollable list of all 15 POIs, each row showing:
+  - Period-colored dot (10px)
+  - POI name (14px, bold)
+  - Period + Category metadata (11px, secondary color, e.g. "Ancient · Religion")
+  - Star rating (filled/empty stars in accent color)
+  - Numeric rating + count (e.g. "4.3 (89)")
+- Tap highlight on :active
+- Tapping a POI row: closes the list, then calls showPoiContent(poi) to open the content bottom sheet
+
+================================================================================
+FEATURE 9: CONTENT PANEL REOPEN BUTTON
+================================================================================
+
+When the bottom sheet is fully closed (hidden state):
+- A floating circular button (40px, book emoji) appears at bottom-right
+- Uses MutationObserver watching the content panel's class attribute to detect visibility changes
+- Tapping it re-opens the panel to peek state
+- Hidden whenever the panel is in any visible state (open/expanded/collapsed)
+
+================================================================================
+FEATURE 10: PWA & SERVICE WORKER
+================================================================================
+
+manifest.json
+-------------
+- Name: "GeoLayers — Explore Your World", short name: "GeoLayers"
+- Display: standalone, portrait orientation
+- Background/theme color: #0a0a0f
+- Icons: 192x192 and 512x512 PNG
+
+Service Worker (sw.js)
+----------------------
+- Install: Cache app shell files (HTML, CSS, JS, manifest, icons), then skipWaiting()
+- Activate: Delete all old cache versions, then clients.claim()
+- Fetch: Network-first strategy — try network, update cache with fresh response, fall back to cache on network failure
+
+Registration (inline in index.html)
+------------------------------------
+- Unregister any old service workers first
+- Register fresh sw.js
+- On updatefound + new worker activated: reload page once (tracked via sessionStorage flag) to pick up changes
+
+Meta Tags
+---------
+- apple-mobile-web-app-capable: yes
+- apple-mobile-web-app-status-bar-style: black-translucent
+- viewport: width=device-width, initial-scale=1.0, viewport-fit=cover
+
+================================================================================
+RESPONSIVE BREAKPOINTS
+================================================================================
+
+Mobile (default, < 768px)
+-------------------------
+- Header: 48px height, 1.1rem title
+- Wheel pickers: 80px vertical width, 260px horizontal width
+- Full-width bottom sheets
+- Compact button sizes
+
+Tablet/Desktop (>= 768px)
+--------------------------
+- Header: 56px height, 1.35rem title
+- Wheel pickers: 100px vertical width, 300px horizontal width
+- Bottom sheets and POI list panel centered with max-width 500px
+- Slightly larger buttons and fonts
+- Timeline drawer width increases to 180px
+
+Large Desktop (>= 1024px)
+--------------------------
+- 1.5rem title, 0.8rem tagline
+
+================================================================================
+Z-INDEX LAYERING
+================================================================================
+
+Map: default
+Header/Wheels/Status/Ghost/Places: 1100
+Content Panel (bottom sheet): 1200
+TTS Button: 1250
+POI List Panel: 1300
+
+================================================================================
+IMPORTANT IMPLEMENTATION DETAILS
+================================================================================
+
+1. All JS uses ES5 syntax (var, function declarations, no arrow functions) wrapped in IIFEs for encapsulation
+2. Script load order matters: config.js -> app.js -> ai.js -> social.js
+3. social.js checks window.geoMap exists before running; polls for GPS position with 500ms interval, falls back to map center after 5 seconds
+4. Wheel picker items use backface-visibility: hidden for clean 3D rendering
+5. All touch handlers use { passive: false } where preventDefault() is needed
+6. CSS transitions use cubic-bezier(0.4, 0, 0.2, 1) consistently
+7. The content database text should be rich, educational, 3 paragraphs per entry (~150 words each), specifically about the archaeology/nature/religion/geology of Israel and the Holy Land across different historical periods
