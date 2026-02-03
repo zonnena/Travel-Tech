@@ -117,26 +117,32 @@
   var reopenBtn = document.getElementById('content-reopen');
 
   if (contentPanel && reopenBtn) {
-    // Show/hide reopen button based on panel state
+    // Show/hide reopen button based on bottom sheet state
+    function isPanelVisible() {
+      return contentPanel.classList.contains('content-panel--open') ||
+             contentPanel.classList.contains('content-panel--expanded') ||
+             contentPanel.classList.contains('content-panel--collapsed');
+    }
+
     var panelObserver = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         if (mutation.attributeName === 'class') {
-          var isOpen = contentPanel.classList.contains('content-panel--open');
-          reopenBtn.style.display = isOpen ? 'none' : 'flex';
+          reopenBtn.style.display = isPanelVisible() ? 'none' : 'flex';
         }
       });
     });
 
     panelObserver.observe(contentPanel, { attributes: true });
 
-    // Reopen panel when button clicked
+    // Reopen panel to peek state when button clicked
     reopenBtn.addEventListener('click', function () {
       contentPanel.classList.add('content-panel--open');
+      contentPanel.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+      contentPanel.style.transform = 'translateY(55%)';
     });
 
     // Set initial state
-    var isOpen = contentPanel.classList.contains('content-panel--open');
-    reopenBtn.style.display = isOpen ? 'none' : 'flex';
+    reopenBtn.style.display = isPanelVisible() ? 'none' : 'flex';
   }
 
   // --- Cleanup on unload (optional) ---

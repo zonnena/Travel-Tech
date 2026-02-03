@@ -2,7 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA -->
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="description" content="Explore layers of history beneath your feet">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GeoLayers">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>GeoLayers — Explore Your World</title>
 
   <!-- Google Fonts: Space Grotesk + Inter -->
@@ -43,6 +51,16 @@
     </div>
   </div>
 
+  <!-- Y-axis Year Wheel (left side, next to period wheel) -->
+  <div id="year-axis" class="wheel-picker wheel-picker--vertical wheel-picker--year">
+    <div class="wheel-picker__highlight"></div>
+    <div class="wheel-picker__mask wheel-picker__mask--top"></div>
+    <div class="wheel-picker__mask wheel-picker__mask--bottom"></div>
+    <div class="wheel-picker__rotor" id="year-rotor">
+      <!-- Items populated dynamically by JS -->
+    </div>
+  </div>
+
   <!-- X-axis Category Wheel (bottom, horizontal) -->
   <div id="category-bar" class="wheel-picker wheel-picker--horizontal">
     <div class="wheel-picker__highlight"></div>
@@ -71,14 +89,24 @@
   <!-- Content Panel Reopen Button -->
   <button id="content-reopen" class="content-reopen" aria-label="Reopen Content Panel" style="display: none;">📖</button>
 
-  <!-- AI Content Panel (slides in from right) -->
+  <!-- TTS Control Button -->
+  <button id="tts-btn" class="tts-btn" aria-label="Read aloud" style="display: none;">
+    <span id="tts-icon" class="tts-btn__icon">&#9654;</span>
+  </button>
+
+  <!-- AI Content Panel (bottom sheet) -->
   <div id="content-panel" class="content-panel">
+    <div class="content-panel__drag-handle" id="drag-handle"><span></span></div>
     <div class="content-panel__header">
       <div class="content-panel__title-row">
         <h2 id="content-panel-title" class="content-panel__title">Ancient Archaeology</h2>
         <span class="content-panel__badge">AI Generated</span>
       </div>
       <button id="content-panel-close" class="content-panel__close" aria-label="Close panel">&times;</button>
+    </div>
+    <div class="content-panel__mode-toggle">
+      <button id="mode-listen" class="mode-toggle__btn mode-toggle__btn--active">Listen</button>
+      <button id="mode-read" class="mode-toggle__btn">Read</button>
     </div>
     <div id="content-panel-body" class="content-panel__body">
       <!-- Loading skeleton (shown while fetching) -->
@@ -98,6 +126,9 @@
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Config -->
+  <script src="js/config.js"></script>
+
   <!-- App script -->
   <script src="js/app.js"></script>
 
@@ -106,5 +137,31 @@
 
   <!-- Social Layer -->
   <script src="js/social.js"></script>
+
+  <!-- Service Worker Registration — force update on every load -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        // Unregister any old service workers, then register fresh
+        var p = registrations.map(function(r) { return r.unregister(); });
+        Promise.all(p).then(function() {
+          navigator.serviceWorker.register('sw.js').then(function(reg) {
+            reg.addEventListener('updatefound', function() {
+              var newWorker = reg.installing;
+              newWorker.addEventListener('statechange', function() {
+                if (newWorker.state === 'activated') {
+                  // New SW active — reload once to pick up all changes
+                  if (!sessionStorage.getItem('sw-refreshed')) {
+                    sessionStorage.setItem('sw-refreshed', '1');
+                    location.reload();
+                  }
+                }
+              });
+            });
+          });
+        });
+      });
+    }
+  </script>
 </body>
 </html>

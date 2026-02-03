@@ -6,6 +6,7 @@
 window.geoState = {
   timePeriod: 'ancient',
   category: 'archaeology',
+  year: null,
   position: null
 };
 
@@ -305,7 +306,9 @@ window.geoState = {
       if (self.animFrame) cancelAnimationFrame(self.animFrame);
       self.rotor.style.transition = '';
 
-      var delta = self.axis === 'vertical' ? e.deltaY : (e.deltaX || e.deltaY);
+      var rawDelta = self.axis === 'vertical' ? e.deltaY : (e.deltaX || e.deltaY);
+      // Invert vertical so scroll-up advances the wheel (like pushing a real wheel surface upward)
+      var delta = self.axis === 'vertical' ? -rawDelta : rawDelta;
       var angleDelta = (delta > 0 ? 1 : -1) * ITEM_ANGLE;
       var target = Math.round(self.currentAngle / ITEM_ANGLE) * ITEM_ANGLE + angleDelta;
       target = Math.max(0, Math.min(target, self.maxAngle));
@@ -342,9 +345,103 @@ window.geoState = {
     });
   };
 
+  // --- Rebuild method (replaces rotor items dynamically) ---
+  WheelPicker.prototype.rebuild = function (newItems) {
+    // Clear existing items
+    while (this.rotor.firstChild) {
+      this.rotor.removeChild(this.rotor.firstChild);
+    }
+
+    // Create new item elements
+    for (var i = 0; i < newItems.length; i++) {
+      var div = document.createElement('div');
+      div.className = 'wheel-picker__item';
+      div.setAttribute(this.dataAttr, newItems[i].value);
+      div.textContent = newItems[i].label;
+      this.rotor.appendChild(div);
+    }
+
+    // Re-query items and recalculate
+    this.items = this.rotor.querySelectorAll('.wheel-picker__item');
+    this.maxAngle = (this.items.length - 1) * ITEM_ANGLE;
+    this.currentAngle = 0;
+    this.selectedIndex = 0;
+    this.velocity = 0;
+
+    this._positionItems();
+    this._updateSelection(0, true);
+
+    // Fire initial selection so state updates
+    if (this.items.length > 0) {
+      var value = this.items[0].getAttribute(this.dataAttr);
+      if (value) {
+        this.onSelect(value);
+        var detail = {};
+        detail[this.dataAttr.replace('data-', '')] = value;
+        document.dispatchEvent(new CustomEvent(this.eventName, { detail: detail }));
+      }
+    }
+  };
+
+  // --- Year Data Map ---
+  var YEAR_ITEMS = {
+    ancient: [
+      { label: '3000 BCE', value: -3000 },
+      { label: '2000 BCE', value: -2000 },
+      { label: '1000 BCE', value: -1000 },
+      { label: '1 CE',     value: 1 },
+      { label: '500 CE',   value: 500 }
+    ],
+    medieval: [
+      { label: '500',  value: 500 },
+      { label: '600',  value: 600 },
+      { label: '700',  value: 700 },
+      { label: '800',  value: 800 },
+      { label: '900',  value: 900 },
+      { label: '1000', value: 1000 },
+      { label: '1100', value: 1100 },
+      { label: '1200', value: 1200 },
+      { label: '1300', value: 1300 },
+      { label: '1400', value: 1400 }
+    ],
+    ottoman: [
+      { label: '1500', value: 1500 },
+      { label: '1600', value: 1600 },
+      { label: '1700', value: 1700 },
+      { label: '1800', value: 1800 },
+      { label: '1900', value: 1900 }
+    ],
+    modern: [
+      { label: '1900', value: 1900 },
+      { label: '1950', value: 1950 },
+      { label: '2000', value: 2000 }
+    ],
+    folklore: [
+      { label: 'Myths',        value: 'myths' },
+      { label: 'Legends',      value: 'legends' },
+      { label: 'Oral Lore',    value: 'oral' },
+      { label: 'Living Tales', value: 'living' }
+    ]
+  };
+
   // --- Initialize Wheels ---
   var body = document.body;
   body.classList.add('theme-ancient');
+
+  // Year Wheel (must be created before period wheel so period onSelect can reference it)
+  var yearWheel = new WheelPicker({
+    containerId: 'year-axis',
+    rotorId: 'year-rotor',
+    axis: 'vertical',
+    dataAttr: 'data-year',
+    eventName: 'yearChange',
+    onSelect: function (year) {
+      window.geoState.year = year;
+    }
+  });
+
+  // Populate year wheel with initial period data
+  yearWheel.rebuild(YEAR_ITEMS.ancient);
 
   // Time Period Wheel
   new WheelPicker({
@@ -357,6 +454,11 @@ window.geoState = {
       window.geoState.timePeriod = period;
       body.className = body.className.replace(/theme-\w+/, '');
       body.classList.add('theme-' + period);
+
+      // Rebuild year wheel for this period
+      if (YEAR_ITEMS[period]) {
+        yearWheel.rebuild(YEAR_ITEMS[period]);
+      }
     }
   });
 

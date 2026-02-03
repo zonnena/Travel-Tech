@@ -1,5 +1,5 @@
 // ============================================================
-// GeoLayers — AI Content Service (Hardcoded Demo Content)
+// GeoLayers — AI Content Service + Bottom Sheet + OpenAI TTS
 // ============================================================
 
 (function () {
@@ -11,6 +11,9 @@
   var panelText = document.getElementById('content-text');
   var panelLoading = document.getElementById('content-loading');
   var closeBtn = document.getElementById('content-panel-close');
+  var dragHandle = document.getElementById('drag-handle');
+  var modeListenBtn = document.getElementById('mode-listen');
+  var modeReadBtn = document.getElementById('mode-read');
 
   // --- Content Database (5 periods x 4 categories = 20 entries) ---
   var contentDB = {
@@ -96,7 +99,207 @@
     }
   };
 
-  // --- Debounce ---
+  // ============================================================
+  // Bottom Sheet Logic
+  // ============================================================
+
+  var SHEET_STATES = { HIDDEN: 'hidden', PEEK: 'peek', EXPANDED: 'expanded', COLLAPSED: 'collapsed' };
+  var sheetState = SHEET_STATES.HIDDEN;
+
+  // Drag state
+  var isDragging = false;
+  var dragStartY = 0;
+  var dragStartTranslateY = 0;
+  var panelHeight = 0;
+  var currentTranslateY = 0;
+  var dragVelocity = 0;
+  var lastDragY = 0;
+  var lastDragTime = 0;
+
+  function getTranslateYPercent(state) {
+    switch (state) {
+      case SHEET_STATES.PEEK: return 55;      // shows ~45%
+      case SHEET_STATES.EXPANDED: return 0;    // full sheet
+      case SHEET_STATES.COLLAPSED: return 92;  // just handle + title (~60px visible from 70vh)
+      default: return 100;                     // hidden
+    }
+  }
+
+  function setSheetState(state, animate) {
+    sheetState = state;
+    var percent = getTranslateYPercent(state);
+
+    // Remove all state classes
+    panel.classList.remove('content-panel--open', 'content-panel--expanded', 'content-panel--collapsed');
+
+    if (state === SHEET_STATES.HIDDEN) {
+      panel.style.transition = animate !== false ? 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)' : '';
+      panel.style.transform = 'translateY(100%)';
+      return;
+    }
+
+    // Add appropriate class
+    if (state === SHEET_STATES.PEEK) panel.classList.add('content-panel--open');
+    else if (state === SHEET_STATES.EXPANDED) panel.classList.add('content-panel--expanded');
+    else if (state === SHEET_STATES.COLLAPSED) panel.classList.add('content-panel--collapsed');
+
+    if (animate !== false) {
+      panel.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+    } else {
+      panel.style.transition = 'none';
+    }
+    panel.style.transform = 'translateY(' + percent + '%)';
+  }
+
+  function openPanel() {
+    setSheetState(SHEET_STATES.PEEK);
+  }
+
+  function closePanel() {
+    setSheetState(SHEET_STATES.HIDDEN);
+  }
+
+  // --- Drag Handling ---
+  function onDragStart(e) {
+    isDragging = true;
+    panelHeight = panel.offsetHeight;
+    dragStartY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // Get current translateY from computed style
+    var transform = window.getComputedStyle(panel).transform;
+    if (transform && transform !== 'none') {
+      var matrix = transform.match(/matrix.*\((.+)\)/);
+      if (matrix) {
+        var values = matrix[1].split(', ');
+        currentTranslateY = parseFloat(values[5]) || 0;
+      }
+    }
+    dragStartTranslateY = currentTranslateY;
+
+    panel.style.transition = 'none';
+    dragVelocity = 0;
+    lastDragY = dragStartY;
+    lastDragTime = Date.now();
+
+    e.preventDefault();
+  }
+
+  function onDragMove(e) {
+    if (!isDragging) return;
+    var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    var deltaY = clientY - dragStartY;
+    var now = Date.now();
+    var dt = now - lastDragTime || 16;
+
+    dragVelocity = (clientY - lastDragY) / dt; // px/ms, positive = downward
+    lastDragY = clientY;
+    lastDragTime = now;
+
+    var newTranslateY = dragStartTranslateY + deltaY;
+    // Clamp: don't allow dragging above expanded (0) or below hidden
+    newTranslateY = Math.max(0, Math.min(newTranslateY, panelHeight));
+
+    currentTranslateY = newTranslateY;
+    panel.style.transform = 'translateY(' + newTranslateY + 'px)';
+
+    e.preventDefault();
+  }
+
+  function onDragEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+
+    var percentY = (currentTranslateY / panelHeight) * 100;
+    var VELOCITY_THRESHOLD = 0.5; // px/ms
+
+    // Fast swipe detection
+    if (Math.abs(dragVelocity) > VELOCITY_THRESHOLD) {
+      if (dragVelocity > 0) {
+        // Swiping down
+        if (sheetState === SHEET_STATES.EXPANDED) {
+          setSheetState(SHEET_STATES.PEEK);
+        } else {
+          setSheetState(SHEET_STATES.COLLAPSED);
+        }
+      } else {
+        // Swiping up
+        if (sheetState === SHEET_STATES.COLLAPSED) {
+          setSheetState(SHEET_STATES.PEEK);
+        } else {
+          setSheetState(SHEET_STATES.EXPANDED);
+        }
+      }
+      return;
+    }
+
+    // Snap to nearest position based on current percentage
+    if (percentY < 25) {
+      setSheetState(SHEET_STATES.EXPANDED);
+    } else if (percentY < 75) {
+      setSheetState(SHEET_STATES.PEEK);
+    } else {
+      setSheetState(SHEET_STATES.COLLAPSED);
+    }
+  }
+
+  // Bind drag events on the handle and header area
+  if (dragHandle) {
+    dragHandle.addEventListener('touchstart', onDragStart, { passive: false });
+    dragHandle.addEventListener('mousedown', onDragStart);
+  }
+  window.addEventListener('touchmove', onDragMove, { passive: false });
+  window.addEventListener('mousemove', onDragMove);
+  window.addEventListener('touchend', onDragEnd);
+  window.addEventListener('mouseup', onDragEnd);
+
+  // Tap handle when collapsed → peek
+  if (dragHandle) {
+    dragHandle.addEventListener('click', function () {
+      if (sheetState === SHEET_STATES.COLLAPSED) {
+        setSheetState(SHEET_STATES.PEEK);
+      }
+    });
+  }
+
+  // ============================================================
+  // Listen / Read Mode Toggle
+  // ============================================================
+
+  var currentMode = 'listen'; // 'listen' or 'read'
+
+  function setMode(mode) {
+    currentMode = mode;
+    if (mode === 'listen') {
+      modeListenBtn.classList.add('mode-toggle__btn--active');
+      modeReadBtn.classList.remove('mode-toggle__btn--active');
+    } else {
+      modeReadBtn.classList.add('mode-toggle__btn--active');
+      modeListenBtn.classList.remove('mode-toggle__btn--active');
+    }
+  }
+
+  if (modeListenBtn) {
+    modeListenBtn.addEventListener('click', function () {
+      setMode('listen');
+      // Auto-play if content is loaded
+      var text = getContentText();
+      if (text && ttsState !== 'speaking') {
+        speakContent(text);
+      }
+    });
+  }
+
+  if (modeReadBtn) {
+    modeReadBtn.addEventListener('click', function () {
+      setMode('read');
+      stopAudio();
+    });
+  }
+
+  // ============================================================
+  // Content Fetching
+  // ============================================================
+
   var debounceTimer = null;
   var DEBOUNCE_MS = 300;
 
@@ -105,15 +308,6 @@
     debounceTimer = setTimeout(function () {
       fetchContent();
     }, DEBOUNCE_MS);
-  }
-
-  // --- Panel control ---
-  function openPanel() {
-    panel.classList.add('content-panel--open');
-  }
-
-  function closePanel() {
-    panel.classList.remove('content-panel--open');
   }
 
   function showLoading() {
@@ -133,14 +327,23 @@
       .filter(function (p) { return p.trim(); })
       .map(function (p) { return '<p>' + p.trim() + '</p>'; })
       .join('');
+
+    // Show TTS button
+    showTtsBtn();
+
+    // Auto-play in listen mode
+    if (currentMode === 'listen') {
+      speakContent(panelText.innerText || panelText.textContent || '');
+    }
   }
 
-  // --- Core fetch function ---
   function fetchContent() {
     var key = window.geoState.timePeriod + '|' + window.geoState.category;
     var entry = contentDB[key];
 
-    // Brief loading animation for realism
+    // Stop any playing audio
+    stopAudio();
+
     showLoading();
     openPanel();
 
@@ -155,13 +358,246 @@
           window.geoState.category.charAt(0).toUpperCase() +
           window.geoState.category.slice(1);
       }
-    }, 600); // Simulated delay for natural feel
+    }, 600);
   }
 
-  // --- Event listeners ---
-  closeBtn.addEventListener('click', closePanel);
-  document.addEventListener('timePeriodChange', debouncedFetch);
-  document.addEventListener('categoryChange', debouncedFetch);
+  // ============================================================
+  // OpenAI TTS Engine (with browser speechSynthesis fallback)
+  // ============================================================
+
+  var ttsBtn = document.getElementById('tts-btn');
+  var ttsIcon = document.getElementById('tts-icon');
+  var ttsState = 'ready'; // ready | speaking | paused | finished
+  var audioElement = null;
+
+  // Browser TTS fallback references
+  var ttsUtterance = null;
+  var ttsVoice = null;
+  var useBrowserTTS = false;
+
+  function pickVoice() {
+    if (typeof speechSynthesis === 'undefined') return null;
+    var voices = speechSynthesis.getVoices();
+    if (!voices.length) return null;
+    var preferred = voices.filter(function (v) {
+      return v.lang.indexOf('en') === 0 && (/google/i.test(v.name) || /natural/i.test(v.name));
+    });
+    if (preferred.length) return preferred[0];
+    var english = voices.filter(function (v) { return v.lang.indexOf('en') === 0; });
+    if (english.length) return english[0];
+    return voices[0];
+  }
+
+  if (typeof speechSynthesis !== 'undefined') {
+    speechSynthesis.onvoiceschanged = function () {
+      ttsVoice = pickVoice();
+    };
+    ttsVoice = pickVoice();
+  }
+
+  function setTtsState(state) {
+    ttsState = state;
+    if (!ttsBtn) return;
+    ttsBtn.classList.remove('tts-btn--playing', 'tts-btn--paused', 'tts-btn--finished');
+    switch (state) {
+      case 'ready':
+        ttsIcon.innerHTML = '&#9654;'; // play triangle
+        break;
+      case 'speaking':
+        ttsIcon.innerHTML = '&#10074;&#10074;'; // pause bars
+        ttsBtn.classList.add('tts-btn--playing');
+        break;
+      case 'paused':
+        ttsIcon.innerHTML = '&#9654;'; // play triangle
+        ttsBtn.classList.add('tts-btn--paused');
+        break;
+      case 'finished':
+        ttsIcon.innerHTML = '&#8634;'; // replay arrow
+        ttsBtn.classList.add('tts-btn--finished');
+        break;
+    }
+  }
+
+  function getContentText() {
+    return panelText.innerText || panelText.textContent || '';
+  }
+
+  // --- OpenAI TTS ---
+  function speakWithOpenAI(text) {
+    var config = window.GEO_CONFIG;
+    if (!config || !config.OPENAI_API_KEY || !config.OPENAI_TTS_ENDPOINT) {
+      speakWithBrowser(text);
+      return;
+    }
+
+    setTtsState('speaking');
+
+    fetch(config.OPENAI_TTS_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + config.OPENAI_API_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: config.OPENAI_TTS_MODEL || 'tts-1',
+        voice: config.OPENAI_TTS_VOICE || 'nova',
+        input: text
+      })
+    })
+    .then(function (response) {
+      if (!response.ok) {
+        throw new Error('TTS API error: ' + response.status);
+      }
+      return response.blob();
+    })
+    .then(function (blob) {
+      var url = URL.createObjectURL(blob);
+      if (audioElement) {
+        audioElement.pause();
+        URL.revokeObjectURL(audioElement.src);
+      }
+      audioElement = new Audio(url);
+      audioElement.onended = function () {
+        setTtsState('finished');
+      };
+      audioElement.onerror = function () {
+        setTtsState('ready');
+      };
+      audioElement.play();
+      useBrowserTTS = false;
+    })
+    .catch(function () {
+      // Fallback to browser TTS
+      speakWithBrowser(text);
+    });
+  }
+
+  // --- Browser TTS Fallback ---
+  function speakWithBrowser(text) {
+    if (typeof speechSynthesis === 'undefined') return;
+    useBrowserTTS = true;
+    speechSynthesis.cancel();
+    var utterance = new SpeechSynthesisUtterance(text);
+    if (ttsVoice) utterance.voice = ttsVoice;
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.onend = function () {
+      setTtsState('finished');
+    };
+    utterance.onerror = function () {
+      setTtsState('ready');
+    };
+    ttsUtterance = utterance;
+    speechSynthesis.speak(utterance);
+    setTtsState('speaking');
+  }
+
+  function speakContent(text) {
+    if (!text) return;
+    speakWithOpenAI(text);
+  }
+
+  function stopAudio() {
+    // Stop OpenAI audio
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.currentTime = 0;
+    }
+    // Stop browser TTS
+    if (typeof speechSynthesis !== 'undefined') {
+      speechSynthesis.cancel();
+    }
+    ttsUtterance = null;
+    setTtsState('ready');
+  }
+
+  function toggleSpeech() {
+    switch (ttsState) {
+      case 'ready':
+      case 'finished':
+        speakContent(getContentText());
+        break;
+      case 'speaking':
+        if (useBrowserTTS) {
+          if (typeof speechSynthesis !== 'undefined') speechSynthesis.pause();
+        } else if (audioElement) {
+          audioElement.pause();
+        }
+        setTtsState('paused');
+        break;
+      case 'paused':
+        if (useBrowserTTS) {
+          if (typeof speechSynthesis !== 'undefined') speechSynthesis.resume();
+        } else if (audioElement) {
+          audioElement.play();
+        }
+        setTtsState('speaking');
+        break;
+    }
+  }
+
+  function showTtsBtn() {
+    if (ttsBtn) {
+      ttsBtn.style.display = 'flex';
+      setTtsState('ready');
+    }
+  }
+
+  function hideTtsBtn() {
+    if (ttsBtn) {
+      ttsBtn.style.display = 'none';
+    }
+    stopAudio();
+  }
+
+  if (ttsBtn) {
+    ttsBtn.addEventListener('click', toggleSpeech);
+  }
+
+  // ============================================================
+  // Shake Detection
+  // ============================================================
+
+  var lastShakeTime = 0;
+  var SHAKE_THRESHOLD = 15;
+  var SHAKE_DEBOUNCE = 1000;
+
+  if (window.DeviceMotionEvent) {
+    window.addEventListener('devicemotion', function (e) {
+      var acc = e.accelerationIncludingGravity;
+      if (!acc) return;
+      var magnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+      if (Math.abs(magnitude - 9.8) > SHAKE_THRESHOLD) {
+        var now = Date.now();
+        if (now - lastShakeTime < SHAKE_DEBOUNCE) return;
+        lastShakeTime = now;
+        if (ttsState === 'speaking' || ttsState === 'paused') {
+          stopAudio();
+        } else {
+          speakContent(getContentText());
+        }
+      }
+    });
+  }
+
+  // ============================================================
+  // Event Listeners
+  // ============================================================
+
+  closeBtn.addEventListener('click', function () {
+    closePanel();
+    hideTtsBtn();
+  });
+
+  document.addEventListener('timePeriodChange', function () {
+    stopAudio();
+    debouncedFetch();
+  });
+
+  document.addEventListener('categoryChange', function () {
+    stopAudio();
+    debouncedFetch();
+  });
 
   // Auto-fetch on first load
   setTimeout(function () {
