@@ -27,10 +27,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Opening the app on a phone browser shows Google Maps centered on the user's current GPS location
   2. The app has a dark background with neon accent colors and clean Gen-Z typography
   3. The layout adapts between mobile phone and desktop browser without breaking
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 01-01: Project scaffolding, Google Maps integration, GPS positioning, dark theme and responsive layout
+- [ ] 01-01-PLAN.md — App shell with Leaflet map, GPS positioning, dark neon theme, and responsive layout
 
 ### Phase 2: Dual-Axis Navigator
 **Goal**: User can select any combination of time period and content category with smooth, visually distinct transitions
