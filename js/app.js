@@ -31,6 +31,9 @@ window.geoState = {
     zoomControl: true
   });
 
+  // Expose map globally for social.js
+  window.geoMap = map;
+
   L.tileLayer(TILE_URL, {
     attribution: TILE_ATTR,
     subdomains: 'abcd',
