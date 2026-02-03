@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'geolayers-v3';
+const CACHE_VERSION = 'geolayers-v9';
 const APP_SHELL = [
   '.',
   'index.html',
@@ -7,6 +7,8 @@ const APP_SHELL = [
   'js/app.js',
   'js/ai.js',
   'js/social.js',
+  'js/ar.js',
+  'js/tour.js',
   'manifest.json',
   'icons/icon-192.png',
   'icons/icon-512.png'

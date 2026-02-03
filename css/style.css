@@ -1062,6 +1062,73 @@ body.theme-folklore {
   border-bottom-color: rgba(18, 18, 26, 0.9) !important;
 }
 
+/* --- AR Toggle Button (inside header) --- */
+.ar-toggle {
+  margin-left: 8px;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+  color: var(--neon-cyan);
+  font-size: 11px;
+  font-family: var(--font-body);
+  flex-shrink: 0;
+}
+.ar-toggle:hover,
+.ar-toggle:active {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: rgba(0, 240, 255, 0.6);
+}
+.ar-toggle__icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.ar-toggle__label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* --- AR Container --- */
+#ar-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  background: #000;
+}
+
+/* --- AR Back Button --- */
+.ar-back {
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
+  z-index: 2100;
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  color: var(--neon-cyan);
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: all 0.3s ease;
+}
+.ar-back:hover {
+  background: rgba(0, 240, 255, 0.1);
+}
+
 /* --- Standalone PWA tweaks --- */
 @media (display-mode: standalone) {
   .status-pill {
@@ -1195,4 +1262,195 @@ body.theme-folklore {
   .top-bar__tagline {
     font-size: 0.8rem;
   }
+}
+
+/* ============================================================
+   Guided Tour
+   ============================================================ */
+
+/* --- Tour Start Button (header) --- */
+.tour-start-btn {
+  margin-left: auto;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+  color: var(--neon-cyan);
+  font-size: 11px;
+  font-family: var(--font-body);
+  flex-shrink: 0;
+}
+.tour-start-btn:hover,
+.tour-start-btn:active {
+  background: rgba(0, 240, 255, 0.2);
+  border-color: rgba(0, 240, 255, 0.6);
+}
+.tour-start-btn__icon {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+}
+.tour-start-btn__label {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* --- Spotlight Overlay --- */
+.tour-spotlight {
+  position: fixed;
+  z-index: 1500;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  transition: top 0.35s ease, left 0.35s ease, width 0.35s ease, height 0.35s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+.tour-spotlight--visible {
+  opacity: 1;
+}
+.tour-spotlight::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 10px;
+  border: 2px solid var(--neon-cyan);
+  box-shadow:
+    0 0 10px rgba(0, 240, 255, 0.5),
+    0 0 25px rgba(0, 240, 255, 0.2),
+    inset 0 0 10px rgba(0, 240, 255, 0.15);
+  pointer-events: none;
+}
+
+/* --- Tour Elevated Target --- */
+.tour-elevated {
+  position: relative;
+  z-index: 1501 !important;
+}
+
+/* --- Tour Tooltip --- */
+.tour-tooltip {
+  position: fixed;
+  z-index: 1502;
+  width: 280px;
+  background: rgba(18, 18, 26, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 14px;
+  padding: 18px;
+  pointer-events: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(0, 240, 255, 0.08);
+}
+.tour-tooltip--visible {
+  opacity: 1;
+}
+
+/* --- Tooltip arrows --- */
+.tour-tooltip--bottom::before,
+.tour-tooltip--above::before,
+.tour-tooltip--right::before,
+.tour-tooltip--left::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: rgba(18, 18, 26, 0.92);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  transform: rotate(45deg);
+}
+.tour-tooltip--bottom::before {
+  top: -7px;
+  left: 50%;
+  margin-left: -6px;
+  border-right: none;
+  border-bottom: none;
+}
+.tour-tooltip--above::before {
+  bottom: -7px;
+  left: 50%;
+  margin-left: -6px;
+  border-left: none;
+  border-top: none;
+}
+.tour-tooltip--right::before {
+  left: -7px;
+  top: 50%;
+  margin-top: -6px;
+  border-right: none;
+  border-top: none;
+}
+.tour-tooltip--left::before {
+  right: -7px;
+  top: 50%;
+  margin-top: -6px;
+  border-left: none;
+  border-bottom: none;
+}
+
+/* --- Tooltip inner elements --- */
+.tour-tooltip__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--neon-cyan);
+  margin-bottom: 6px;
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+}
+.tour-tooltip__text {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+.tour-tooltip__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.tour-tooltip__counter {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+.tour-tooltip__btns {
+  display: flex;
+  gap: 8px;
+}
+.tour-tooltip__btn {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tour-tooltip__btn--skip {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+}
+.tour-tooltip__btn--skip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+.tour-tooltip__btn--next {
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+}
+.tour-tooltip__btn--next:hover {
+  background: rgba(0, 240, 255, 0.25);
+  border-color: rgba(0, 240, 255, 0.6);
 }

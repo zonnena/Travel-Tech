@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
   <!-- App styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -32,6 +32,14 @@
       <h1 class="top-bar__title">GeoLayers</h1>
       <p class="top-bar__tagline">Discover layers of history beneath your feet</p>
     </div>
+    <button id="tour-start" class="tour-start-btn" aria-label="Start Tour">
+      <span class="tour-start-btn__icon">?</span>
+      <span class="tour-start-btn__label">Tour</span>
+    </button>
+    <button id="ar-toggle" class="ar-toggle" aria-label="AR View">
+      <span class="ar-toggle__icon">📷</span>
+      <span class="ar-toggle__label">AR</span>
+    </button>
   </header>
 
   <!-- Map Container -->
@@ -146,34 +154,48 @@
     <div id="poi-list-items" class="poi-list-panel__items"></div>
   </div>
 
+  <!-- AR Container & Back Button -->
+  <div id="ar-container" style="display:none;"></div>
+  <button id="ar-back" class="ar-back" style="display:none;">← Map</button>
+
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <!-- Config -->
-  <script src="js/config.js"></script>
+  <script src="js/config.js?v=8"></script>
 
   <!-- App script -->
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=8"></script>
 
   <!-- AI Content Engine -->
-  <script src="js/ai.js"></script>
+  <script src="js/ai.js?v=8"></script>
 
   <!-- Social Layer -->
-  <script src="js/social.js"></script>
+  <script src="js/social.js?v=8"></script>
+
+  <!-- AR Layer -->
+  <script src="js/ar.js?v=8"></script>
+
+  <!-- Tour -->
+  <script src="js/tour.js?v=8"></script>
 
   <!-- Service Worker Registration — force update on every load -->
   <script>
     if ('serviceWorker' in navigator) {
+      // Nuke all old caches immediately on page load
+      if (window.caches) {
+        caches.keys().then(function(keys) {
+          keys.forEach(function(k) { caches.delete(k); });
+        });
+      }
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        // Unregister any old service workers, then register fresh
         var p = registrations.map(function(r) { return r.unregister(); });
         Promise.all(p).then(function() {
-          navigator.serviceWorker.register('sw.js').then(function(reg) {
+          navigator.serviceWorker.register('sw.js?v=8', { updateViaCache: 'none' }).then(function(reg) {
             reg.addEventListener('updatefound', function() {
               var newWorker = reg.installing;
               newWorker.addEventListener('statechange', function() {
                 if (newWorker.state === 'activated') {
-                  // New SW active — reload once to pick up all changes
                   if (!sessionStorage.getItem('sw-refreshed')) {
                     sessionStorage.setItem('sw-refreshed', '1');
                     location.reload();
