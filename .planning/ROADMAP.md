@@ -55,10 +55,11 @@ Plans:
   2. Generated content displays in a readable panel with proper formatting
   3. Changing the time period or category fetches and displays new content
   4. A loading indicator appears while content is being generated
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: Claude API integration, content panel UI, loading states, content refresh on selection change
+- [ ] 03-01-PLAN.md — Config file, content panel markup and CSS with slide animation and loading skeleton
+- [ ] 03-02-PLAN.md — Gemini API service: fetch, debounce, cache, event wiring, auto-fetch
 
 ### Phase 4: Polish & Social
 **Goal**: Demo is presentation-ready with simulated social presence on the map and no visible broken states
@@ -83,5 +84,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4
 |-------|---------------|--------|-----------|
 | 1. Foundation | 1/1 | Complete ✓ | 2026-02-03 |
 | 2. Dual-Axis Navigator | 1/1 | Complete ✓ | 2026-02-03 |
-| 3. AI Content | 0/1 | Not started | - |
+| 3. AI Content | 0/2 | Not started | - |
 | 4. Polish & Social | 0/1 | Not started | - |
