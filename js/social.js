@@ -19,13 +19,38 @@
     { name: 'Yael', dLat:  0.0000, dLng:  0.0030, emoji: '\uD83C\uDFA8' }
   ];
 
+  // Period → marker color mapping
+  var periodColors = {
+    ancient:  '#f59e0b',
+    medieval: '#a0845c',
+    ottoman:  '#14b8a6',
+    modern:   '#3b82f6',
+    folklore: '#d946ef'
+  };
+
+  function randomRating() {
+    return Math.round((3.5 + Math.random() * 1.5) * 10) / 10;
+  }
+  function randomCount() {
+    return Math.floor(12 + Math.random() * 328);
+  }
+
   var poiTemplates = [
-    { name: 'Ancient Market Square',  dLat:  0.0005, dLng:  0.0005, type: 'market' },
-    { name: 'Historical Museum',      dLat: -0.0005, dLng: -0.0005, type: 'museum' },
-    { name: 'Old Temple Ruins',       dLat:  0.0015, dLng: -0.0015, type: 'temple' },
-    { name: 'Garden Park',            dLat: -0.0015, dLng:  0.0015, type: 'park' },
-    { name: 'Archaeological Site',    dLat:  0.0010, dLng:  0.0025, type: 'ruins' },
-    { name: 'Heritage Center',        dLat: -0.0010, dLng: -0.0025, type: 'museum' }
+    { name: 'Temple of the Sun',       dLat:  0.0020, dLng:  0.0015, type: 'temple',  category: 'religion',    period: 'ancient',   rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Bronze Age Excavation',   dLat: -0.0025, dLng:  0.0010, type: 'ruins',   category: 'archaeology', period: 'ancient',   rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Roman Aqueduct Remains',  dLat:  0.0030, dLng: -0.0020, type: 'ruins',   category: 'archaeology', period: 'medieval',  rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Crusader Watchtower',     dLat: -0.0015, dLng: -0.0035, type: 'ruins',   category: 'archaeology', period: 'medieval',  rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Ottoman Bathhouse',       dLat:  0.0010, dLng:  0.0040, type: 'museum',  category: 'archaeology', period: 'ottoman',   rating: randomRating(), ratingCount: randomCount() },
+    { name: "Suleiman's Fountain",     dLat: -0.0035, dLng:  0.0025, type: 'market',  category: 'geology',     period: 'ottoman',   rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Heritage Museum',         dLat:  0.0005, dLng: -0.0045, type: 'museum',  category: 'archaeology', period: 'modern',    rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Nature Reserve Trail',    dLat: -0.0040, dLng: -0.0010, type: 'park',    category: 'nature',      period: 'modern',    rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Sacred Grove',            dLat:  0.0035, dLng:  0.0030, type: 'park',    category: 'nature',      period: 'folklore',  rating: randomRating(), ratingCount: randomCount() },
+    { name: "Prophet's Cave",          dLat: -0.0010, dLng:  0.0050, type: 'cave',    category: 'religion',    period: 'folklore',  rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Geological Overlook',     dLat:  0.0045, dLng: -0.0005, type: 'park',    category: 'geology',     period: 'ancient',   rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Old City Marketplace',    dLat: -0.0020, dLng: -0.0040, type: 'market',  category: 'archaeology', period: 'ottoman',   rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Monastery Ruins',         dLat:  0.0015, dLng: -0.0035, type: 'ruins',   category: 'religion',    period: 'medieval',  rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Wildflower Meadow',       dLat: -0.0045, dLng:  0.0020, type: 'park',    category: 'nature',      period: 'ancient',   rating: randomRating(), ratingCount: randomCount() },
+    { name: 'Fossil Cliff',            dLat:  0.0025, dLng:  0.0045, type: 'cave',    category: 'geology',     period: 'modern',    rating: randomRating(), ratingCount: randomCount() }
   ];
 
   // --- State ---
@@ -79,19 +104,28 @@
     poiTemplates.forEach(function (p) {
       var lat = centerLat + p.dLat;
       var lng = centerLng + p.dLng;
+      var color = periodColors[p.period] || '#f59e0b';
 
-      var marker = L.circleMarker([lat, lng], {
-        radius: 6,
-        fillColor: '#f59e0b',
-        color: 'rgba(245, 158, 11, 0.8)',
-        weight: 1,
-        fillOpacity: 0.7
+      var icon = L.divIcon({
+        className: '',
+        html: '<div class="poi-marker" style="background:' + color + '; box-shadow: 0 0 6px ' + color + ';"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6]
       });
 
-      marker.bindTooltip(p.name, {
+      var marker = L.marker([lat, lng], { icon: icon });
+
+      var starsText = p.rating.toFixed(1);
+      marker.bindTooltip(p.name + ' \u2605 ' + starsText, {
         direction: 'top',
-        offset: [0, -6],
+        offset: [0, -8],
         opacity: 0.9
+      });
+
+      marker.on('click', function () {
+        if (window.showPoiContent) {
+          window.showPoiContent(p);
+        }
       });
 
       poisLayer.addLayer(marker);

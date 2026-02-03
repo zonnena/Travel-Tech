@@ -321,6 +321,7 @@
 
   function displayContent(title, text) {
     hideLoading();
+    hidePoiRating();
     panelTitle.textContent = title;
     panelText.innerHTML = text
       .split('\n\n')
@@ -588,6 +589,72 @@
       }
     });
   }
+
+  // ============================================================
+  // POI Content Display
+  // ============================================================
+
+  var poiRatingEl = document.getElementById('poi-rating');
+
+  function renderStars(rating) {
+    var full = Math.floor(rating);
+    var half = (rating - full) >= 0.25;
+    var stars = '';
+    for (var i = 0; i < full; i++) stars += '\u2605';
+    if (half && full < 5) { stars += '\u2605'; full++; }
+    for (var j = full + (half ? 0 : 0); stars.length < 5; j++) stars += '\u2606';
+    return stars;
+  }
+
+  function showPoiRating(rating, count) {
+    if (!poiRatingEl) return;
+    poiRatingEl.innerHTML =
+      '<span class="content-panel__rating-stars">' + renderStars(rating) + '</span> ' +
+      '<span class="content-panel__rating-count">' + rating.toFixed(1) + ' &middot; ' + count + ' reviews</span>';
+    poiRatingEl.classList.add('content-panel__rating--visible');
+  }
+
+  function hidePoiRating() {
+    if (!poiRatingEl) return;
+    poiRatingEl.innerHTML = '';
+    poiRatingEl.classList.remove('content-panel__rating--visible');
+  }
+
+  function displayPoiContent(name, text, rating, ratingCount) {
+    hideLoading();
+    panelTitle.textContent = name;
+    showPoiRating(rating, ratingCount);
+    panelText.innerHTML = text
+      .split('\n\n')
+      .filter(function (p) { return p.trim(); })
+      .map(function (p) { return '<p>' + p.trim() + '</p>'; })
+      .join('');
+
+    showTtsBtn();
+
+    if (currentMode === 'listen') {
+      speakContent(panelText.innerText || panelText.textContent || '');
+    }
+  }
+
+  window.showPoiContent = function (poi) {
+    stopAudio();
+    hidePoiRating();
+    var key = poi.period + '|' + poi.category;
+    var entry = contentDB[key];
+    showLoading();
+    openPanel();
+    setTimeout(function () {
+      if (entry) {
+        displayPoiContent(poi.name, entry.text, poi.rating, poi.ratingCount);
+      } else {
+        hideLoading();
+        panelTitle.textContent = poi.name;
+        showPoiRating(poi.rating, poi.ratingCount);
+        panelText.innerHTML = '<p>No content available for this combination yet.</p>';
+      }
+    }, 400);
+  };
 
   // ============================================================
   // Event Listeners
