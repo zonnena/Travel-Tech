@@ -2,6 +2,13 @@
 // GeoLayers — Map Initialization & GPS Positioning
 // ============================================================
 
+// --- Global State (accessible by all modules) ---
+window.geoState = {
+  timePeriod: 'ancient',
+  category: 'archaeology',
+  position: null
+};
+
 (function () {
   'use strict';
 
@@ -62,6 +69,7 @@
     var lng = pos.coords.longitude;
     map.flyTo([lat, lng], DEFAULT_ZOOM);
     setUserPosition(lat, lng);
+    window.geoState.position = { lat: lat, lng: lng };
     updateStatus('GPS Active', true);
   }
 
@@ -79,6 +87,7 @@
     navigator.geolocation.watchPosition(
       function (pos) {
         setUserPosition(pos.coords.latitude, pos.coords.longitude);
+        window.geoState.position = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       },
       function () {
         // Silently ignore watch errors after initial attempt
@@ -88,4 +97,61 @@
   } else {
     onLocationError();
   }
+})();
+
+// ============================================================
+// GeoLayers — Dual-Axis Navigator Interaction
+// ============================================================
+
+(function () {
+  'use strict';
+
+  var timeAxis = document.getElementById('time-axis');
+  var categoryBar = document.getElementById('category-bar');
+  var body = document.body;
+
+  // Set initial theme class
+  body.classList.add('theme-ancient');
+
+  // --- Time Period Selection ---
+  timeAxis.addEventListener('click', function (e) {
+    var btn = e.target.closest('.time-axis__item');
+    if (!btn || btn.classList.contains('active')) return;
+
+    // Update active button
+    timeAxis.querySelector('.active').classList.remove('active');
+    btn.classList.add('active');
+
+    // Update state
+    var period = btn.getAttribute('data-period');
+    window.geoState.timePeriod = period;
+
+    // Swap theme class on body
+    body.className = body.className.replace(/theme-\w+/, '');
+    body.classList.add('theme-' + period);
+
+    // Dispatch custom event
+    document.dispatchEvent(new CustomEvent('timePeriodChange', {
+      detail: { timePeriod: period }
+    }));
+  });
+
+  // --- Category Selection ---
+  categoryBar.addEventListener('click', function (e) {
+    var btn = e.target.closest('.category-bar__item');
+    if (!btn || btn.classList.contains('active')) return;
+
+    // Update active button
+    categoryBar.querySelector('.active').classList.remove('active');
+    btn.classList.add('active');
+
+    // Update state
+    var category = btn.getAttribute('data-category');
+    window.geoState.category = category;
+
+    // Dispatch custom event
+    document.dispatchEvent(new CustomEvent('categoryChange', {
+      detail: { category: category }
+    }));
+  });
 })();
