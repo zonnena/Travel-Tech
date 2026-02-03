@@ -18,8 +18,8 @@ Standing somewhere and feeling deeply connected to that place through personaliz
 
 - [ ] Dual-axis navigator: vertical Y-axis (Past → Present → Folklore/Future) and horizontal X-axis (Archaeology, Nature, Religion, Geology)
 - [ ] GPS-aware: detect user's current location and use it as context for all content
-- [ ] AI-generated content: call Claude API with location + selected time period + category to produce rich historical/cultural content
-- [ ] Google Maps integration with user's position marker
+- [ ] AI-generated content: call Gemini API with location + selected time period + category to produce rich historical/cultural content
+- [ ] Leaflet + OpenStreetMap integration with user's position marker
 - [ ] Social map layer: simulated friend avatars on the map with movement (fake data for demo)
 - [ ] Ghost Mode toggle (privacy concept — visual toggle, doesn't need real backend)
 - [ ] Personalization hint: reorder categories based on simulated user interest (can be hardcoded for demo)
@@ -43,7 +43,7 @@ Standing somewhere and feeling deeply connected to that place through personaliz
 - **Hackathon timeline:** Building now, presenting tomorrow
 - **Demo format:** Live on phone (mobile browser) + localhost on big screen (projector)
 - **Target region:** Israel — content generation focused on Israeli locations
-- **Content strategy:** All content AI-generated via Claude API based on GPS coordinates
+- **Content strategy:** All content AI-generated via Gemini API based on GPS coordinates
 - **Audience:** Hackathon judges evaluating the concept and working demo
 - **Full vision:** Flutter + Firebase + AR production app (documented in original spec for future development)
 
@@ -53,8 +53,8 @@ Standing somewhere and feeling deeply connected to that place through personaliz
 - **Tech stack**: Web app (HTML/CSS/JS or lightweight framework) — fastest path to working demo
 - **Content**: AI-generated only — no pre-curated content database needed
 - **Performance**: Must work smoothly on phone browser for live demo
-- **API**: Claude API key needed for content generation
-- **Maps**: Google Maps API key needed for map integration
+- **API**: Gemini API key needed for content generation (free tier from aistudio.google.com)
+- **Maps**: Leaflet + OpenStreetMap — no API key needed
 
 ## Key Decisions
 
@@ -65,6 +65,8 @@ Standing somewhere and feeling deeply connected to that place through personaliz
 | Fake social data | Real-time social requires Firebase setup — not worth it for demo | — Pending |
 | No AR for demo | AR setup is complex and wasn't selected as must-have for demo | — Pending |
 | Israel-focused | Specific region for demo, matches "Galilee Explorer" vision | — Pending |
+| Leaflet + OpenStreetMap over Google Maps | Free, no API key, no billing — instant setup | — Pending |
+| Gemini API over Claude API | User has access to Gemini, free tier available | — Pending |
 
 ---
 *Last updated: 2026-02-03 after initialization*
