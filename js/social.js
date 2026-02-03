@@ -112,6 +112,33 @@
     });
   }
 
+  // --- Content Panel Reopen Button ---
+  var contentPanel = document.getElementById('content-panel');
+  var reopenBtn = document.getElementById('content-reopen');
+
+  if (contentPanel && reopenBtn) {
+    // Show/hide reopen button based on panel state
+    var panelObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.attributeName === 'class') {
+          var isOpen = contentPanel.classList.contains('content-panel--open');
+          reopenBtn.style.display = isOpen ? 'none' : 'flex';
+        }
+      });
+    });
+
+    panelObserver.observe(contentPanel, { attributes: true });
+
+    // Reopen panel when button clicked
+    reopenBtn.addEventListener('click', function () {
+      contentPanel.classList.add('content-panel--open');
+    });
+
+    // Set initial state
+    var isOpen = contentPanel.classList.contains('content-panel--open');
+    reopenBtn.style.display = isOpen ? 'none' : 'flex';
+  }
+
   // --- Cleanup on unload (optional) ---
   window.addEventListener('beforeunload', function () {
     if (movementInterval) {

@@ -543,6 +543,33 @@ body.theme-folklore {
   letter-spacing: 0.05em;
 }
 
+/* --- Content Reopen Button --- */
+.content-reopen {
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+  z-index: 1100;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
+  color: var(--theme-accent);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.content-reopen:hover {
+  background: rgba(var(--theme-accent-rgb), 0.15);
+  transform: scale(1.05);
+}
+
 /* --- POI Tooltip Overrides --- */
 .leaflet-tooltip {
   background: rgba(18, 18, 26, 0.9) !important;
@@ -615,6 +642,14 @@ body.theme-folklore {
     right: 8px;
     padding: 6px 10px;
     font-size: 11px;
+  }
+
+  .content-reopen {
+    bottom: 90px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
   }
 }
 
