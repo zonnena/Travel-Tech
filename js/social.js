@@ -109,8 +109,8 @@
       var icon = L.divIcon({
         className: '',
         html: '<div class="poi-marker" style="background:' + color + '; box-shadow: 0 0 6px ' + color + ';"></div>',
-        iconSize: [12, 12],
-        iconAnchor: [6, 6]
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
       });
 
       var marker = L.marker([lat, lng], { icon: icon });

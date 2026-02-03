@@ -597,12 +597,11 @@
   var poiRatingEl = document.getElementById('poi-rating');
 
   function renderStars(rating) {
-    var full = Math.floor(rating);
-    var half = (rating - full) >= 0.25;
+    var filled = Math.round(rating);
     var stars = '';
-    for (var i = 0; i < full; i++) stars += '\u2605';
-    if (half && full < 5) { stars += '\u2605'; full++; }
-    for (var j = full + (half ? 0 : 0); stars.length < 5; j++) stars += '\u2606';
+    for (var i = 0; i < 5; i++) {
+      stars += i < filled ? '\u2605' : '\u2606';
+    }
     return stars;
   }
 

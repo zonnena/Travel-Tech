@@ -653,15 +653,27 @@ body.theme-folklore {
 
 /* --- POI Marker --- */
 .poi-marker {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255,255,255,0.4);
   cursor: pointer;
   transition: transform 0.2s ease;
 }
 .poi-marker:active {
-  transform: scale(1.3);
+  transform: scale(1.4);
+}
+/* Larger invisible tap target around small POI dot */
+.leaflet-marker-icon .poi-marker {
+  position: relative;
+}
+.leaflet-marker-icon .poi-marker::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
 }
 
 .content-panel__close {
