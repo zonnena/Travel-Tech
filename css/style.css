@@ -184,15 +184,82 @@ body.theme-folklore {
   transition: border-color 0.5s ease, background 0.5s ease;
 }
 
-/* --- Vertical Wheel (Time Axis, left side) — mobile base --- */
-.wheel-picker--vertical {
+/* --- Timeline Drawer (collapsible left panel) --- */
+.timeline-drawer {
+  position: fixed;
   left: var(--safe-left);
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translateX(0);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.timeline-drawer--collapsed {
+  transform: translateY(-50%) translateX(calc(-150px - var(--safe-left)));
+}
+
+.timeline-drawer__panel {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 150px;
+}
+
+.timeline-drawer__tab {
+  width: 22px;
+  height: 56px;
+  background: rgba(18, 18, 26, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.2);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.5s ease, background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.timeline-drawer__tab:active {
+  background: rgba(var(--theme-accent-rgb), 0.1);
+}
+
+.timeline-drawer__tab-arrow {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid rgba(var(--theme-accent-rgb), 0.6);
+  border-bottom: 2px solid rgba(var(--theme-accent-rgb), 0.6);
+  transform: rotate(-45deg);
+  margin-left: -2px;
+  transition: transform 0.35s ease, border-color 0.5s ease;
+}
+
+.timeline-drawer--collapsed .timeline-drawer__tab-arrow {
+  transform: rotate(-45deg);
+}
+
+.timeline-drawer:not(.timeline-drawer--collapsed) .timeline-drawer__tab-arrow {
+  transform: rotate(135deg);
+  margin-left: 2px;
+}
+
+/* --- Vertical Wheel (inside drawer) — mobile base --- */
+.wheel-picker--vertical {
+  position: relative;
+  left: auto;
+  top: auto;
+  transform: none;
   width: 80px;
   height: 150px;
   border-right: 1px solid rgba(var(--theme-accent-rgb), 0.15);
-  border-radius: 0 12px 12px 0;
+  border-radius: 0;
   perspective: 300px;
   transition: border-right-color 0.5s ease;
 }
@@ -233,21 +300,21 @@ body.theme-folklore {
 .wheel-picker--vertical .wheel-picker__mask--top {
   top: 0;
   background: linear-gradient(to bottom, rgba(18, 18, 26, 0.9), transparent);
-  border-radius: 0 12px 0 0;
 }
 
 .wheel-picker--vertical .wheel-picker__mask--bottom {
   bottom: 0;
   background: linear-gradient(to top, rgba(18, 18, 26, 0.9), transparent);
-  border-radius: 0 0 12px 0;
 }
 
-/* --- Year Wheel (sits right of period wheel) — mobile base --- */
+/* --- Year Wheel (sits right of period wheel) --- */
 .wheel-picker--year {
-  left: calc(80px + var(--safe-left));
-  border-radius: 0 12px 12px 0;
+  position: relative;
+  left: auto;
   width: 70px;
   border-left: none;
+  border-right: none;
+  border-radius: 0;
   overflow: visible;
 }
 
@@ -259,19 +326,6 @@ body.theme-folklore {
   left: -35px;
   width: 70px;
   font-size: 9px;
-}
-
-.wheel-picker--year .wheel-picker__mask--top {
-  border-radius: 0 12px 0 0;
-}
-
-.wheel-picker--year .wheel-picker__mask--bottom {
-  border-radius: 0 0 12px 0;
-}
-
-/* Period wheel: remove right border-radius when year wheel is beside it */
-#time-axis.wheel-picker--vertical {
-  border-radius: 0;
 }
 
 /* --- Horizontal Wheel (Category Bar, bottom) — mobile base --- */
@@ -871,6 +925,14 @@ body.theme-folklore {
     padding: 8px 16px;
   }
 
+  .timeline-drawer--collapsed {
+    transform: translateY(-50%) translateX(calc(-180px - var(--safe-left)));
+  }
+
+  .timeline-drawer__panel {
+    height: 180px;
+  }
+
   .wheel-picker--vertical {
     width: 100px;
     height: 180px;
@@ -883,7 +945,6 @@ body.theme-folklore {
   }
 
   .wheel-picker--year {
-    left: calc(100px + var(--safe-left));
     width: 80px;
   }
 

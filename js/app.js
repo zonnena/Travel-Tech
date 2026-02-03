@@ -475,4 +475,192 @@ window.geoState = {
       window.geoState.category = category;
     }
   });
+
+  // ============================================================
+  // Timeline Drawer — collapsible left panel
+  // ============================================================
+
+  var drawer = document.getElementById('timeline-drawer');
+  var drawerTab = document.getElementById('timeline-tab');
+  if (drawer && drawerTab) {
+    var drawerOpen = false;
+    var drawerDragging = false;
+    var drawerStartX = 0;
+    var drawerCurrentX = 0;
+    var drawerVelocity = 0;
+    var drawerLastX = 0;
+    var drawerLastTime = 0;
+    // Total width of the panel content (period 80 + year 70 = 150px)
+    var drawerWidth = 150;
+    var EDGE_ZONE = 25; // px from left edge to detect swipe-in
+
+    function setDrawerOpen(open, animate) {
+      drawerOpen = open;
+      if (animate !== false) {
+        drawer.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+      } else {
+        drawer.style.transition = 'none';
+      }
+      if (open) {
+        drawer.classList.remove('timeline-drawer--collapsed');
+        drawer.style.transform = 'translateY(-50%) translateX(0)';
+      } else {
+        drawer.classList.add('timeline-drawer--collapsed');
+        drawer.style.transform = '';
+      }
+    }
+
+    // Tap the tab to toggle
+    drawerTab.addEventListener('click', function (e) {
+      if (drawerDragging) return;
+      setDrawerOpen(!drawerOpen);
+      e.stopPropagation();
+    });
+
+    // Tap outside the drawer to close
+    document.addEventListener('click', function (e) {
+      if (drawerOpen && !drawer.contains(e.target)) {
+        setDrawerOpen(false);
+      }
+    });
+
+    // Edge swipe to open, swipe-left to close
+    var edgeSwipeActive = false;
+
+    function onDrawerTouchStart(e) {
+      var touch = e.touches[0];
+      var fromLeftEdge = touch.clientX < EDGE_ZONE;
+      var onDrawer = drawer.contains(e.target);
+
+      if (!drawerOpen && fromLeftEdge) {
+        edgeSwipeActive = true;
+      } else if (drawerOpen && onDrawer) {
+        edgeSwipeActive = true;
+      } else {
+        edgeSwipeActive = false;
+        return;
+      }
+
+      drawerDragging = false;
+      drawerStartX = touch.clientX;
+      drawerLastX = touch.clientX;
+      drawerLastTime = Date.now();
+      drawerVelocity = 0;
+    }
+
+    function onDrawerTouchMove(e) {
+      if (!edgeSwipeActive) return;
+      var touch = e.touches[0];
+      var dx = touch.clientX - drawerStartX;
+      var now = Date.now();
+      var dt = now - drawerLastTime || 16;
+
+      drawerVelocity = (touch.clientX - drawerLastX) / dt;
+      drawerLastX = touch.clientX;
+      drawerLastTime = now;
+
+      // Only start drag after 5px movement
+      if (!drawerDragging && Math.abs(dx) > 5) {
+        drawerDragging = true;
+        drawer.style.transition = 'none';
+      }
+
+      if (!drawerDragging) return;
+
+      var safeLeft = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-left')) || 0;
+
+      if (drawerOpen) {
+        // Dragging to close: dx goes negative
+        var offset = Math.min(0, Math.max(-drawerWidth - safeLeft, dx));
+        drawer.style.transform = 'translateY(-50%) translateX(' + offset + 'px)';
+      } else {
+        // Dragging to open: dx goes positive
+        var openOffset = -drawerWidth - safeLeft + Math.min(drawerWidth + safeLeft, Math.max(0, dx));
+        drawer.style.transform = 'translateY(-50%) translateX(' + openOffset + 'px)';
+      }
+
+      e.preventDefault();
+    }
+
+    function onDrawerTouchEnd() {
+      if (!edgeSwipeActive) return;
+      edgeSwipeActive = false;
+
+      if (!drawerDragging) return;
+      drawerDragging = false;
+
+      var VELOCITY_THRESHOLD = 0.3;
+      if (Math.abs(drawerVelocity) > VELOCITY_THRESHOLD) {
+        setDrawerOpen(drawerVelocity > 0);
+      } else {
+        // Snap based on position
+        var transform = window.getComputedStyle(drawer).transform;
+        var tx = 0;
+        if (transform && transform !== 'none') {
+          var m = transform.match(/matrix.*\((.+)\)/);
+          if (m) tx = parseFloat(m[1].split(', ')[4]) || 0;
+        }
+        setDrawerOpen(tx > -drawerWidth / 2);
+      }
+    }
+
+    window.addEventListener('touchstart', onDrawerTouchStart, { passive: true });
+    window.addEventListener('touchmove', onDrawerTouchMove, { passive: false });
+    window.addEventListener('touchend', onDrawerTouchEnd);
+
+    // Mouse support for desktop testing
+    var mouseEdgeActive = false;
+    drawer.addEventListener('mousedown', function (e) {
+      mouseEdgeActive = true;
+      drawerDragging = false;
+      drawerStartX = e.clientX;
+      drawerLastX = e.clientX;
+      drawerLastTime = Date.now();
+      drawerVelocity = 0;
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!mouseEdgeActive) return;
+      var fakeTouch = { touches: [{ clientX: e.clientX }] };
+      // Reuse touch move logic
+      var dx = e.clientX - drawerStartX;
+      var now = Date.now();
+      var dt = now - drawerLastTime || 16;
+      drawerVelocity = (e.clientX - drawerLastX) / dt;
+      drawerLastX = e.clientX;
+      drawerLastTime = now;
+
+      if (!drawerDragging && Math.abs(dx) > 5) {
+        drawerDragging = true;
+        drawer.style.transition = 'none';
+      }
+      if (!drawerDragging) return;
+
+      if (drawerOpen) {
+        var offset = Math.min(0, Math.max(-drawerWidth, dx));
+        drawer.style.transform = 'translateY(-50%) translateX(' + offset + 'px)';
+      } else {
+        var openOffset = -drawerWidth + Math.min(drawerWidth, Math.max(0, dx));
+        drawer.style.transform = 'translateY(-50%) translateX(' + openOffset + 'px)';
+      }
+      e.preventDefault();
+    });
+    window.addEventListener('mouseup', function () {
+      if (!mouseEdgeActive) return;
+      mouseEdgeActive = false;
+      if (!drawerDragging) return;
+      drawerDragging = false;
+      var VELOCITY_THRESHOLD = 0.3;
+      if (Math.abs(drawerVelocity) > VELOCITY_THRESHOLD) {
+        setDrawerOpen(drawerVelocity > 0);
+      } else {
+        var transform = window.getComputedStyle(drawer).transform;
+        var tx = 0;
+        if (transform && transform !== 'none') {
+          var m = transform.match(/matrix.*\((.+)\)/);
+          if (m) tx = parseFloat(m[1].split(', ')[4]) || 0;
+        }
+        setDrawerOpen(tx > -drawerWidth / 2);
+      }
+    });
+  }
 })();

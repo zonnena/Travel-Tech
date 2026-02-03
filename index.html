@@ -37,27 +37,34 @@
   <!-- Map Container -->
   <div id="map"></div>
 
-  <!-- Y-axis Time Period Wheel (left side, vertical) -->
-  <div id="time-axis" class="wheel-picker wheel-picker--vertical">
-    <div class="wheel-picker__highlight"></div>
-    <div class="wheel-picker__mask wheel-picker__mask--top"></div>
-    <div class="wheel-picker__mask wheel-picker__mask--bottom"></div>
-    <div class="wheel-picker__rotor" id="time-rotor">
-      <div class="wheel-picker__item" data-period="ancient">Ancient</div>
-      <div class="wheel-picker__item" data-period="medieval">Medieval</div>
-      <div class="wheel-picker__item" data-period="ottoman">Ottoman</div>
-      <div class="wheel-picker__item" data-period="modern">Modern</div>
-      <div class="wheel-picker__item" data-period="folklore">Folklore</div>
+  <!-- Timeline Drawer (collapses left, pull to reveal) -->
+  <div id="timeline-drawer" class="timeline-drawer timeline-drawer--collapsed">
+    <div class="timeline-drawer__panel">
+      <!-- Y-axis Time Period Wheel -->
+      <div id="time-axis" class="wheel-picker wheel-picker--vertical">
+        <div class="wheel-picker__highlight"></div>
+        <div class="wheel-picker__mask wheel-picker__mask--top"></div>
+        <div class="wheel-picker__mask wheel-picker__mask--bottom"></div>
+        <div class="wheel-picker__rotor" id="time-rotor">
+          <div class="wheel-picker__item" data-period="ancient">Ancient</div>
+          <div class="wheel-picker__item" data-period="medieval">Medieval</div>
+          <div class="wheel-picker__item" data-period="ottoman">Ottoman</div>
+          <div class="wheel-picker__item" data-period="modern">Modern</div>
+          <div class="wheel-picker__item" data-period="folklore">Folklore</div>
+        </div>
+      </div>
+      <!-- Y-axis Year Wheel -->
+      <div id="year-axis" class="wheel-picker wheel-picker--vertical wheel-picker--year">
+        <div class="wheel-picker__highlight"></div>
+        <div class="wheel-picker__mask wheel-picker__mask--top"></div>
+        <div class="wheel-picker__mask wheel-picker__mask--bottom"></div>
+        <div class="wheel-picker__rotor" id="year-rotor">
+          <!-- Items populated dynamically by JS -->
+        </div>
+      </div>
     </div>
-  </div>
-
-  <!-- Y-axis Year Wheel (left side, next to period wheel) -->
-  <div id="year-axis" class="wheel-picker wheel-picker--vertical wheel-picker--year">
-    <div class="wheel-picker__highlight"></div>
-    <div class="wheel-picker__mask wheel-picker__mask--top"></div>
-    <div class="wheel-picker__mask wheel-picker__mask--bottom"></div>
-    <div class="wheel-picker__rotor" id="year-rotor">
-      <!-- Items populated dynamically by JS -->
+    <div class="timeline-drawer__tab" id="timeline-tab">
+      <span class="timeline-drawer__tab-arrow"></span>
     </div>
   </div>
 
