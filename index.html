@@ -52,10 +52,40 @@
     <span id="status-text">Locating...</span>
   </div>
 
+  <!-- AI Content Panel (slides in from right) -->
+  <div id="content-panel" class="content-panel">
+    <div class="content-panel__header">
+      <div class="content-panel__title-row">
+        <h2 id="content-panel-title" class="content-panel__title">Ancient Archaeology</h2>
+        <span class="content-panel__badge">AI Generated</span>
+      </div>
+      <button id="content-panel-close" class="content-panel__close" aria-label="Close panel">&times;</button>
+    </div>
+    <div id="content-panel-body" class="content-panel__body">
+      <!-- Loading skeleton (shown while fetching) -->
+      <div id="content-loading" class="content-panel__loading">
+        <div class="skeleton-line skeleton-line--long"></div>
+        <div class="skeleton-line skeleton-line--medium"></div>
+        <div class="skeleton-line skeleton-line--long"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+        <div class="skeleton-line skeleton-line--long"></div>
+        <div class="skeleton-line skeleton-line--medium"></div>
+      </div>
+      <!-- AI content goes here -->
+      <div id="content-text" class="content-panel__text"></div>
+    </div>
+  </div>
+
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Config (API keys) -->
+  <script src="js/config.js"></script>
+
   <!-- App script -->
   <script src="js/app.js"></script>
+
+  <!-- AI Content Engine -->
+  <script src="js/ai.js"></script>
 </body>
 </html>
